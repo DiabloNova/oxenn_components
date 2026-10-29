@@ -19,7 +19,7 @@ const tiles: Tile[] = [
 ];
 
 export default function AnimatedGlowTiles() {
-  const sceneRef = useRef<HTMLElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [motionPaused, setMotionPaused] = useState(false);
 
