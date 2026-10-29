@@ -15,6 +15,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
+- **Gradient Waves:** `/components/gradient-waves` — animated, pointer-reactive gradient waves with click swells.
 
 Open the hamburger menu on the home page to navigate to the floating bottom navigation showcase.
 
