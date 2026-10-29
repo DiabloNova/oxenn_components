@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Check, MousePointer2, Waves } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, MousePointer2, Waves } from "lucide-react";
 import GradientWaves from "@/components/gradient-waves/GradientWaves";
 import styles from "./page.module.css";
 
@@ -30,6 +30,7 @@ export default function GradientWavesPage() {
             mouseInteraction
             swellOnClick
             lightMode
+            style={{ width: "100%", height: "100%" }}
           />
           <div className={styles.canvasOverlay}>
             <span className={styles.pill}><span /> CANVAS ACTIVE</span>
