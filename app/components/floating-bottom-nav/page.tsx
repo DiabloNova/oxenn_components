@@ -1,4 +1,4 @@
-import FloatingBottomNav from "@/components/floating-bottom-nav/FloatingBottomNav";
+import FloatingBottomNavDemo from "./FloatingBottomNavDemo";
 import { ArrowLeft, Check, Command, MousePointer2 } from "lucide-react";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -26,7 +26,7 @@ export default function FloatingBottomNavPage() {
         </div>
       </section>
       <div className={styles.bottomNote}><span>GLASS · DEPTH · MOTION</span><span>RESPONSIVE BY DESIGN</span></div>
-      <FloatingBottomNav onNavigate={(destination) => { if (destination !== "home") console.info(`Selected navigation: ${destination}`); }} onCreateTask={(title) => console.info("Task captured:", title)} />
+      <FloatingBottomNavDemo />
     </main>
   );
 }
