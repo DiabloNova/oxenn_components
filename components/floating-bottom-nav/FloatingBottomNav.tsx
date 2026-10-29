@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { CheckSquare, Folder, Home, MessageCircle, Plus, X } from "lucide-react";
 import styles from "./floating-bottom-nav.module.css";
 
@@ -32,7 +32,7 @@ export default function FloatingBottomNav({
     onNavigate?.(destination);
   }
 
-  function createTask(event: React.FormEvent<HTMLFormElement>) {
+  function createTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const title = taskTitle.trim();
     if (!title) return;
