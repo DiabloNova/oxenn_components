@@ -1,0 +1,44 @@
+.page { min-height: 100vh; position: relative; overflow: hidden; background: #e9e9ed; color: #171719; }
+.ambient { position: absolute; width: 680px; height: 680px; left: 50%; top: 160px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.82) 0%, rgba(245,245,247,.45) 40%, rgba(233,233,237,0) 72%); pointer-events: none; }
+.frame { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 48px; }
+.topbar { height: 88px; display: flex; align-items: center; border-bottom: 1px solid rgba(24,24,29,.08); }
+.wordmark { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: #171719; font-size: 17px; font-weight: 760; letter-spacing: -.06em; }
+.logo { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 10px; background: #171719; color: white; }
+.dot { color: #8b7bb4; margin-left: -9px; }
+.topMeta { display: flex; align-items: center; gap: 9px; margin-left: 38px; color: #777881; font-size: 9px; letter-spacing: .13em; font-weight: 700; }
+.liveDot { width: 6px; height: 6px; border-radius: 50%; background: #8d80b8; box-shadow: 0 0 0 3px rgba(141,128,184,.13); }
+.version { border: 1px solid rgba(24,24,29,.12); border-radius: 5px; padding: 3px 5px; font-size: 8px; letter-spacing: .03em; }
+.github { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; color: #51525a; text-decoration: none; font-size: 11px; font-weight: 600; }
+.github:hover { color: #171719; }
+.intro { padding: 78px 0 42px; max-width: 650px; }
+.eyebrow { display: flex; align-items: center; gap: 9px; color: #777881; font-size: 9px; font-weight: 750; letter-spacing: .15em; }
+.eyebrow span { width: 20px; height: 1px; background: #8b7bb4; }
+.intro h1 { margin: 22px 0 17px; font-size: clamp(52px, 7vw, 84px); line-height: .93; letter-spacing: -.085em; font-weight: 650; }
+.intro h1 em { color: #8b7bb4; font-family: Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: -.07em; }
+.intro p { max-width: 385px; margin: 0; color: #6f7079; font-size: 13px; line-height: 1.85; }
+.instructions { display: flex; align-items: center; gap: 10px; margin-top: 24px; color: #55565e; font-size: 10px; font-weight: 600; }
+.mouseIcon { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 9px; border: 1px solid rgba(24,24,29,.1); background: rgba(255,255,255,.48); }
+.stage { border: 1px solid rgba(255,255,255,.9); border-radius: 23px; background: rgba(255,255,255,.25); box-shadow: 0 15px 50px rgba(36,36,43,.035); overflow: hidden; }
+.stageTop, .stageFoot { display: flex; align-items: center; justify-content: space-between; color: #85868e; font-size: 8px; font-weight: 750; letter-spacing: .13em; }
+.stageTop { height: 44px; padding: 0 18px; border-bottom: 1px solid rgba(24,24,29,.055); }
+.stageState { display: flex; align-items: center; gap: 6px; color: #797080; letter-spacing: .07em; }
+.demoSurface { position: relative; display: flex; justify-content: center; align-items: center; min-height: 600px; padding: 24px; overflow: hidden; }
+.gridPattern { position: absolute; inset: 0; opacity: .4; background-image: linear-gradient(rgba(64,64,74,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(64,64,74,.045) 1px, transparent 1px); background-size: 32px 32px; mask-image: radial-gradient(ellipse at center, black 5%, transparent 78%); }
+.demoSurface > aside { z-index: 1; }
+.demoHint { position: absolute; right: 25px; bottom: 24px; display: flex; align-items: center; gap: 8px; color: #8a8b92; font-size: 10px; }
+.stageFoot { height: 40px; padding: 0 18px; border-top: 1px solid rgba(24,24,29,.055); }
+.footer { display: flex; justify-content: space-between; align-items: center; padding: 25px 0 30px; color: #85868e; font-size: 8px; font-weight: 750; letter-spacing: .12em; }
+.footer span:last-child { display: inline-flex; align-items: center; gap: 7px; font-weight: 550; letter-spacing: .04em; }
+@media (max-width: 760px) {
+ .frame { padding: 0 16px; }
+ .topbar { height: 68px; }
+ .topMeta { margin-left: 17px; font-size: 8px; }
+ .github { font-size: 0; gap: 0; }
+ .github svg { width: 19px; height: 19px; }
+ .intro { padding: 55px 0 30px; }
+ .intro h1 { font-size: clamp(50px, 15vw, 72px); }
+ .demoSurface { min-height: 540px; padding: 16px 8px; }
+ .stageFoot { font-size: 7px; letter-spacing: .07em; }
+ .demoHint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .ambient { display: none; } }
