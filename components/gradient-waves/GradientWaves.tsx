@@ -26,8 +26,8 @@ export default function GradientWaves() {
 
       <section className={styles.stage} data-paused={paused} aria-label="Animated gradient waves background">
         <div className={styles.mesh} aria-hidden="true" />
-        <div className={styles.glow glowOne} aria-hidden="true" />
-        <div className={styles.glow glowTwo} aria-hidden="true" />
+        <div className={`${styles.glow} ${styles.glowOne}`} aria-hidden="true" />
+        <div className={`${styles.glow} ${styles.glowTwo}`} aria-hidden="true" />
         <svg className={styles.waves} viewBox="0 0 1440 760" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Slowly flowing layered cyan and blue waves">
           <defs>
             <linearGradient id="wave-a" x1="0" y1="0" x2="1" y2="1">
