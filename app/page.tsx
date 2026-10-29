@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/sidebar/Sidebar";
-import { ArrowUpRight, CircleCheck, Command, Layers3, Menu, MoveUpRight, X } from "lucide-react";
+import { ArrowUpRight, CircleCheck, Command, Layers3, Menu, MoveUpRight, Waves, X } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function HomePage() {
@@ -20,6 +20,7 @@ export default function HomePage() {
           {menuOpen && <nav className={styles.menuPanel} id="site-navigation" aria-label="Site navigation">
             <Link href="/" onClick={() => setMenuOpen(false)}><Command size={16} /> Component lab home</Link>
             <Link href="/components/floating-bottom-nav" onClick={() => setMenuOpen(false)}><Layers3 size={16} /> Floating bottom navigation <ArrowUpRight size={14} /></Link>
+            <Link href="/components/gradient-waves" onClick={() => setMenuOpen(false)}><Waves size={16} /> Gradient waves <ArrowUpRight size={14} /></Link>
             <a href="https://github.com/DiabloNova/oxenn_components" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}><ArrowUpRight size={16} /> GitHub repository</a>
           </nav>}
         </header>
