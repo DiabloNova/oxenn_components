@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import {
-  Activity, Archive, Bell, Bookmark, BriefcaseBusiness, ChevronDown,
-  ChevronLeft, ChevronRight, CircleHelp, Compass, CreditCard, Folder,
-  FolderOpen, Home, Inbox, LayoutGrid, LifeBuoy, Mail, MessageSquare,
-  Plus, Search, Settings2, ShieldCheck, Sparkles, Users, Wallet, X
+  Activity, Bookmark, BriefcaseBusiness, ChevronDown, ChevronLeft, ChevronRight,
+  CircleHelp, Compass, CreditCard, Folder, FolderOpen, Home, LayoutGrid, Mail,
+  Plus, Search, Settings2, Sparkles, Users, X
 } from "lucide-react";
 import styles from "./sidebar.module.css";
 
@@ -102,7 +101,7 @@ export default function Sidebar({ defaultExpanded = false, onNavigate, className
         </button>
       </div>
 
-      <section className={styles.primaryPanel} aria-hidden={!expanded}>
+      <section className={styles.primaryPanel} aria-hidden={!expanded} inert={!expanded}>
         <header className={styles.panelHeader}>
           <Sparkles size={21} fill="currentColor" />
           <span className={styles.label}>Menu</span>
@@ -136,7 +135,7 @@ export default function Sidebar({ defaultExpanded = false, onNavigate, className
         </footer>
       </section>
 
-      <section className={styles.secondaryPanel} aria-hidden={!expanded}>
+      <section className={styles.secondaryPanel} aria-hidden={!expanded} inert={!expanded}>
         <div className={styles.secondaryTop}>
           <div className={styles.secondaryHeading}>Quick access</div>
           {renderSubItems(quickLinks, "quick-access")}
