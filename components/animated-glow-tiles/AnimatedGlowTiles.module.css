@@ -1,0 +1,78 @@
+.artwork {
+  --ink: #f4f5fa;
+  --muted: #858c9c;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: clamp(22px, 4vw, 54px) clamp(18px, 5.8vw, 88px) 28px;
+  color: var(--ink);
+  background: #070a10;
+  isolation: isolate;
+}
+.artwork::before {
+  position: absolute; inset: 0; z-index: -2; content: "";
+  background: radial-gradient(ellipse at 50% 60%, #101c2d 0%, #090d15 45%, #06080d 100%);
+}
+.topline, .topActions, .footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.topline { max-width: 1440px; margin: 0 auto; }
+.brand { color: #f5f6fb; text-decoration: none; font-size: 13px; letter-spacing: -.04em; font-weight: 650; }
+.brand span { color: #687084; padding: 0 4px; }
+.topActions { justify-content: flex-end; }
+.live { display: inline-flex; align-items: center; gap: 8px; color: #9ba4b7; font-size: 9px; letter-spacing: .16em; }
+.live > span { width: 6px; height: 6px; border-radius: 50%; background: #7affad; box-shadow: 0 0 12px #38ff8b; animation: statusPulse 2s ease-in-out infinite; }
+.motionToggle { border: 1px solid #ffffff25; border-radius: 999px; background: #ffffff08; color: #d9deea; padding: 9px 13px; font-size: 11px; cursor: pointer; transition: background .25s ease, border-color .25s ease, transform .25s ease; }
+.motionToggle:hover { background: #ffffff14; border-color: #ffffff55; transform: translateY(-1px); }
+.motionToggle:focus-visible { outline: 2px solid #65d9ff; outline-offset: 4px; }
+.heading { max-width: 1440px; margin: clamp(64px, 9vh, 112px) auto 30px; }
+.kicker { color: #9ba5b9; font-size: 9px; letter-spacing: .2em; margin: 0 0 22px; }
+.heading h1 { margin: 0; font-size: clamp(38px, 6vw, 82px); line-height: .99; font-weight: 500; letter-spacing: -.075em; }
+.heading h1 em { color: #9eaac0; font-style: normal; }
+.description { max-width: 410px; margin: 22px 0 0; color: #8e97a9; font-size: 13px; line-height: 1.8; }
+.scene { --tilt-x: 0deg; --tilt-y: 0deg; position: relative; max-width: 1440px; height: clamp(390px, 56vw, 690px); margin: 0 auto; overflow: hidden; border: 1px solid #ffffff0c; border-radius: 30px; background: linear-gradient(145deg, #0b101a 0%, #080b12 56%, #0d111b 100%); perspective: 1300px; box-shadow: inset 0 1px #ffffff08, 0 28px 90px #0008; }
+.scene::before { position: absolute; inset: 0; content: ""; opacity: .17; background-image: linear-gradient(#8ea4d01a 1px, transparent 1px), linear-gradient(90deg, #8ea4d01a 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(transparent, #000 24%, #000 80%, transparent); }
+.ambientGlow { position: absolute; width: 65%; height: 70%; left: 18%; top: 15%; border-radius: 50%; background: conic-gradient(from 40deg, #18d8ff1b, #3f66ff1a, #e34bff17, #4dff8b17, #18d8ff1b); filter: blur(75px); animation: ambientBreath 11s ease-in-out infinite alternate; }
+.sceneGrain { position: absolute; inset: 0; opacity: .12; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E"); }
+.tileField { position: absolute; inset: 0; transform: rotateX(calc(9deg + var(--tilt-x))) rotateY(var(--tilt-y)) rotateZ(-13deg) scale(.88); transform-style: preserve-3d; transition: transform 650ms cubic-bezier(.2,.8,.2,1); }
+.tile { position: absolute; display: grid; place-items: center; overflow: hidden; border: 1px solid #ffffff35; border-radius: clamp(34px, 6vw, 86px); transform-style: preserve-3d; box-shadow: inset 0 2px 2px #ffffff65, inset 0 -2px 2px #ffffff12, 0 28px 60px #0008; animation: tileFloat 7s ease-in-out infinite; }
+.tile::before { position: absolute; inset: 0; content: ""; border-radius: inherit; background: linear-gradient(145deg, #ffffff2e 0%, #ffffff05 38%, #00000022 100%); pointer-events: none; }
+.tile::after { position: absolute; content: ""; inset: 2px; border-radius: inherit; box-shadow: inset 0 0 0 1px #ffffff12; pointer-events: none; }
+.tileTopShine { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(130deg, #ffffff38, transparent 32%, transparent 68%, #ffffff08); opacity: .6; }
+.engineering { z-index: 4; width: 48%; height: 66%; left: 25%; top: 17%; background: linear-gradient(145deg, #426bff 0%, #176eff 40%, #2142bc 100%); box-shadow: inset 0 2px 2px #ffffffa1, inset 0 -3px 4px #142c8a70, 0 0 34px #4b91ff75, 0 40px 90px #000b; animation-delay: -2s; }
+.engineering::before { background: radial-gradient(ellipse at 42% 57%, #00efff 0%, #00b8ffad 13%, transparent 45%), linear-gradient(145deg, #ffffff34, transparent 43%, #0a1d8b88); }
+.engineering::after { box-shadow: inset 0 0 0 1px #c3f6ff50, 0 0 45px #39d7ff4a; }
+.tileLabel { position: relative; z-index: 2; color: #effbff; font-size: clamp(14px, 2.1vw, 28px); font-weight: 450; letter-spacing: -.045em; text-shadow: 0 1px 16px #c3f7ffbb; transform: translateZ(28px) rotateZ(13deg); animation: labelGlow 4s ease-in-out infinite alternate; }
+.systems { z-index: 2; width: 48%; height: 62%; left: 62%; top: -7%; background: linear-gradient(145deg, #8aff6d, #05d82e 48%, #087b30); box-shadow: inset 0 2px 2px #f0ffe7a8, 0 0 50px #38ff5c55, 0 40px 80px #000a; animation-delay: -4s; }
+.systems::before { background: radial-gradient(ellipse at 40% 70%, #00ff4b90, transparent 55%), linear-gradient(145deg, #ffffff62, transparent 42%, #004e2380); }
+.codeTexture { position: absolute; right: 5%; top: 22%; color: #d3ffd329; font: 500 clamp(10px, 1.5vw, 18px)/1.7 ui-monospace, monospace; letter-spacing: .14em; transform: rotateZ(13deg); }
+.creative { z-index: 3; width: 54%; height: 64%; left: -20%; top: 45%; background: linear-gradient(140deg, #f18bc6, #8b5a9b 55%, #5e6c8c); box-shadow: inset 0 2px 2px #ffffff8a, 0 0 45px #ed8bcf42, 0 40px 80px #000b; animation-delay: -5s; }
+.creative::before { background: linear-gradient(135deg, #ffffff44, transparent 44%, #0b173c75); }
+.intelligence { z-index: 1; width: 61%; height: 64%; left: 47%; top: 58%; background: linear-gradient(140deg, #d95cf1, #8319bb 48%, #27145f); box-shadow: inset 0 2px 2px #ffffff66, 0 0 55px #c44aff40, 0 40px 90px #000b; animation-delay: -1s; }
+.intelligence::before { background: radial-gradient(ellipse at 35% 15%, #ffabff6b, transparent 42%), linear-gradient(150deg, #ffffff2a, transparent 44%, #0a062caa); }
+.research { z-index: 0; width: 49%; height: 49%; left: 15%; top: 85%; background: linear-gradient(145deg, #9ca67d, #3a463f 65%, #141e20); filter: blur(1.5px); opacity: .7; animation-delay: -3s; }
+.sceneCaption { position: absolute; z-index: 8; inset: auto 24px 22px; display: flex; justify-content: space-between; gap: 12px; color: #7f899d; font-size: 8px; letter-spacing: .16em; }
+.footer { max-width: 1440px; margin: 22px auto 0; color: #6f788a; font-size: 8px; letter-spacing: .13em; }
+.footer b { color: #43d7ff; font-weight: 400; padding: 0 5px; }
+.scene[data-paused="true"] *, .scene[data-paused="true"] .ambientGlow { animation-play-state: paused !important; }
+.scene[data-paused="true"] .tileField { transition: none; }
+@keyframes tileFloat { 0%, 100% { translate: 0 0 0; } 50% { translate: 0 -12px 0; } }
+@keyframes ambientBreath { 0% { transform: scale(.88) rotate(-8deg); opacity: .55; } 100% { transform: scale(1.15) rotate(15deg); opacity: 1; } }
+@keyframes labelGlow { from { opacity: .78; filter: brightness(.94); } to { opacity: 1; filter: brightness(1.18); } }
+@keyframes statusPulse { 0%, 100% { opacity: .65; box-shadow: 0 0 4px #38ff8b; } 50% { opacity: 1; box-shadow: 0 0 13px #38ff8b; } }
+@media (max-width: 640px) {
+  .artwork { padding: 22px 16px 20px; }
+  .heading { margin-top: 58px; }
+  .scene { height: 500px; border-radius: 22px; }
+  .tileField { transform: rotateX(calc(10deg + var(--tilt-x))) rotateY(var(--tilt-y)) rotateZ(-13deg) scale(.92); }
+  .engineering { width: 66%; height: 52%; left: 14%; top: 22%; }
+  .systems { width: 60%; height: 45%; left: 58%; top: 2%; }
+  .creative { width: 68%; height: 46%; left: -25%; top: 57%; }
+  .intelligence { width: 76%; height: 46%; left: 38%; top: 68%; }
+  .research { width: 64%; height: 35%; left: 8%; top: 96%; }
+  .sceneCaption { inset: auto 14px 14px; font-size: 7px; letter-spacing: .08em; }
+  .sceneCaption span:nth-child(2) { display: none; }
+  .footer { align-items: flex-start; font-size: 7px; line-height: 1.7; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile, .ambientGlow, .tileLabel, .live > span { animation: none !important; }
+  .tileField, .motionToggle { transition: none !important; }
+}
