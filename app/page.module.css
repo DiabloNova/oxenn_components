@@ -8,7 +8,10 @@
 .topMeta { display: flex; align-items: center; gap: 9px; margin-left: 38px; color: #777881; font-size: 9px; letter-spacing: .13em; font-weight: 700; }
 .liveDot { width: 6px; height: 6px; border-radius: 50%; background: #8d80b8; box-shadow: 0 0 0 3px rgba(141,128,184,.13); }
 .version { border: 1px solid rgba(24,24,29,.12); border-radius: 5px; padding: 3px 5px; font-size: 8px; letter-spacing: .03em; }
-.github { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; color: #51525a; text-decoration: none; font-size: 11px; font-weight: 600; }
+.artworkLink { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; margin-right: 22px; color: #51525a; text-decoration: none; font-size: 11px; font-weight: 650; transition: color .2s ease, transform .2s ease; }
+.artworkLink:hover { color: #5d4db2; transform: translateY(-1px); }
+.artworkLink:focus-visible { outline: 2px solid #8b7bb4; outline-offset: 4px; border-radius: 4px; }
+.github { display: inline-flex; align-items: center; gap: 7px; color: #51525a; text-decoration: none; font-size: 11px; font-weight: 600; }
 .github:hover { color: #171719; }
 .intro { padding: 78px 0 42px; max-width: 650px; }
 .eyebrow { display: flex; align-items: center; gap: 9px; color: #777881; font-size: 9px; font-weight: 750; letter-spacing: .15em; }
@@ -33,6 +36,7 @@
  .frame { padding: 0 16px; }
  .topbar { height: 68px; }
  .topMeta { margin-left: 17px; font-size: 8px; }
+ .artworkLink { margin-left: auto; margin-right: 12px; font-size: 9px; }
  .github { font-size: 0; gap: 0; }
  .github svg { width: 19px; height: 19px; }
  .intro { padding: 55px 0 30px; }
