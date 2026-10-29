@@ -1,15 +1,24 @@
+/* Forme sidebar showcase and global component navigation. */
 .page { min-height: 100vh; position: relative; overflow: hidden; background: #e9e9ed; color: #171719; }
 .ambient { position: absolute; width: 680px; height: 680px; left: 50%; top: 160px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.82) 0%, rgba(245,245,247,.45) 40%, rgba(233,233,237,0) 72%); pointer-events: none; }
 .frame { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 48px; }
-.topbar { height: 88px; display: flex; align-items: center; border-bottom: 1px solid rgba(24,24,29,.08); }
+.topbar { position: relative; height: 88px; display: flex; align-items: center; border-bottom: 1px solid rgba(24,24,29,.08); }
 .wordmark { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: #171719; font-size: 17px; font-weight: 760; letter-spacing: -.06em; }
 .logo { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 10px; background: #171719; color: white; }
 .dot { color: #8b7bb4; margin-left: -9px; }
 .topMeta { display: flex; align-items: center; gap: 9px; margin-left: 38px; color: #777881; font-size: 9px; letter-spacing: .13em; font-weight: 700; }
-.liveDot { width: 6px; height: 6px; border-radius: 50%; background: #8d80b8; box-shadow: 0 0 0 3px rgba(141,128,184,.13); }
+.liveDot { width: 6px; height: 6px; border-radius: 50%; background: #8d80b8; box-shadow: 0 0 0 3px rgba(141,128,180,.13); }
 .version { border: 1px solid rgba(24,24,29,.12); border-radius: 5px; padding: 3px 5px; font-size: 8px; letter-spacing: .03em; }
 .github { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; color: #51525a; text-decoration: none; font-size: 11px; font-weight: 600; }
 .github:hover { color: #171719; }
+.menuButton { display: grid; place-items: center; width: 39px; height: 39px; margin-left: 18px; border: 1px solid rgba(24,24,29,.1); border-radius: 13px; color: #222228; background: rgba(255,255,255,.72); cursor: pointer; transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+.menuButton:hover { background: white; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30,30,38,.08); }
+.menuButton:focus-visible, .menuPanel a:focus-visible { outline: 3px solid rgba(139,123,180,.45); outline-offset: 3px; }
+.menuPanel { position: absolute; z-index: 20; top: 72px; right: 0; display: grid; gap: 5px; width: min(310px, calc(100vw - 32px)); padding: 9px; border: 1px solid rgba(255,255,255,.95); border-radius: 20px; background: rgba(250,250,252,.92); box-shadow: 0 20px 55px rgba(30,30,38,.16), inset 0 1px 0 white; -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); animation: menuIn 190ms cubic-bezier(.2,.85,.2,1) both; }
+.menuPanel a { display: flex; align-items: center; gap: 10px; min-height: 43px; padding: 0 12px; border-radius: 12px; color: #3b3b43; text-decoration: none; font-size: 12px; font-weight: 600; transition: color 160ms ease, background 160ms ease; }
+.menuPanel a svg:last-child { margin-left: auto; }
+.menuPanel a:hover { color: #171719; background: rgba(255,255,255,.9); }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .intro { padding: 78px 0 42px; max-width: 650px; }
 .eyebrow { display: flex; align-items: center; gap: 9px; color: #777881; font-size: 9px; font-weight: 750; letter-spacing: .15em; }
 .eyebrow span { width: 20px; height: 1px; background: #8b7bb4; }
@@ -29,16 +38,5 @@
 .stageFoot { height: 40px; padding: 0 18px; border-top: 1px solid rgba(24,24,29,.055); }
 .footer { display: flex; justify-content: space-between; align-items: center; padding: 25px 0 30px; color: #85868e; font-size: 8px; font-weight: 750; letter-spacing: .12em; }
 .footer span:last-child { display: inline-flex; align-items: center; gap: 7px; font-weight: 550; letter-spacing: .04em; }
-@media (max-width: 760px) {
- .frame { padding: 0 16px; }
- .topbar { height: 68px; }
- .topMeta { margin-left: 17px; font-size: 8px; }
- .github { font-size: 0; gap: 0; }
- .github svg { width: 19px; height: 19px; }
- .intro { padding: 55px 0 30px; }
- .intro h1 { font-size: clamp(50px, 15vw, 72px); }
- .demoSurface { min-height: 540px; padding: 16px 8px; }
- .stageFoot { font-size: 7px; letter-spacing: .07em; }
- .demoHint { display: none; }
-}
-@media (prefers-reduced-motion: reduce) { .ambient { display: none; } }
+@media (max-width: 760px) { .frame { padding: 0 16px; } .topbar { height: 68px; } .topMeta { margin-left: 17px; font-size: 8px; } .github { font-size: 0; gap: 0; } .github svg { width: 19px; height: 19px; } .menuButton { margin-left: 12px; flex: 0 0 auto; } .intro { padding: 55px 0 30px; } .intro h1 { font-size: clamp(50px, 15vw, 72px); } .demoSurface { min-height: 540px; padding: 16px 8px; } .stageFoot { font-size: 7px; letter-spacing: .07em; } .demoHint { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ambient { display: none; } .menuPanel, .menuButton { animation: none; transition: none; } }
