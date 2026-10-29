@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Sidebar from "@/components/sidebar/Sidebar";
 import { ArrowUpRight, CircleCheck, Command, Layers3, MoveUpRight } from "lucide-react";
 import styles from "./page.module.css";
@@ -10,6 +11,7 @@ export default function HomePage() {
         <header className={styles.topbar}>
           <a className={styles.wordmark} href="#" aria-label="Forme home"><span className={styles.logo}><Command size={17} /></span> forme<span className={styles.dot}>.</span></a>
           <div className={styles.topMeta}><span className={styles.liveDot} /> COMPONENT LAB <span className={styles.version}>v1.0</span></div>
+          <Link className={styles.artworkLink} href="/components/animated-glow-tiles">Animated artwork <ArrowUpRight size={15}/></Link>
           <a className={styles.github} href="https://github.com/DiabloNova/oxenn_components" target="_blank" rel="noreferrer">View repository <ArrowUpRight size={15}/></a>
         </header>
         <section className={styles.intro}>
