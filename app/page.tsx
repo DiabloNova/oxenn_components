@@ -13,7 +13,7 @@ export default function HomePage() {
       <div className={styles.ambient} aria-hidden="true" />
       <div className={styles.frame}>
         <header className={styles.topbar}>
-          <a className={styles.wordmark} href="/" aria-label="Forme home"><span className={styles.logo}><Command size={17} /></span> forme<span className={styles.dot}>.</span></a>
+          <Link className={styles.wordmark} href="/" aria-label="Forme home"><span className={styles.logo}><Command size={17} /></span> forme<span className={styles.dot}>.</span></Link>
           <div className={styles.topMeta}><span className={styles.liveDot} /> COMPONENT LAB <span className={styles.version}>v1.0</span></div>
           <a className={styles.github} href="https://github.com/DiabloNova/oxenn_components" target="_blank" rel="noreferrer">View repository <ArrowUpRight size={15}/></a>
           <button className={styles.menuButton} type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="site-navigation" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
