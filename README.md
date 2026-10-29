@@ -1,6 +1,6 @@
-# Forme — Animated Sidebar
+# Oxenn Components
 
-A reusable, responsive sidebar component inspired by the supplied reference: a slim icon rail expands into a layered navigation workspace with nested groups, hover states, and a secondary quick-access panel.
+Reusable, responsive UI components built with Next.js App Router, React, TypeScript, CSS Modules, and lucide-react.
 
 ## Run locally
 
@@ -11,7 +11,32 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Component
+## Component showcase
+
+- **Home:** `/` — animated collapsible sidebar.
+- **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
+
+Open the hamburger menu on the home page to navigate to the floating bottom navigation showcase.
+
+## Floating bottom navigation
+
+```tsx
+import FloatingBottomNav from "@/components/floating-bottom-nav/FloatingBottomNav";
+
+export default function AppShell() {
+  return (
+    <FloatingBottomNav
+      initialActive="home"
+      onNavigate={(destination) => console.log(destination)}
+      onCreateTask={(title) => console.log("Create task:", title)}
+    />
+  );
+}
+```
+
+The component starts with Home selected. Clicking a destination animates the active pill and label; the coral plus opens an accessible quick-task dialog. The component owns no backend or persistence: pass `onCreateTask` to connect it to your task system.
+
+## Existing sidebar
 
 ```tsx
 import Sidebar from "@/components/sidebar/Sidebar";
@@ -21,28 +46,13 @@ export default function DashboardLayout() {
 }
 ```
 
-### Props
+## Quality checks
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `defaultExpanded` | `boolean` | `false` | Start with the full navigation open. |
-| `onNavigate` | `(id: string, label: string) => void` | — | Called when a navigation or sub-navigation item is selected. |
-| `className` | `string` | — | Optional class for the sidebar root. |
-
-## Interaction details
-
-- Starts collapsed and animates open/closed with a custom easing curve.
-- Expand/collapse is available from the sparkle brand control and the chevron toggle.
-- Main navigation items support active state and nested expandable groups.
-- Secondary panel contains quick links, draft folders, and folder collections.
-- Menu search filters primary navigation items.
-- Keyboard focus is visible; icon controls have accessible labels.
-- Respects `prefers-reduced-motion`.
-- At mobile widths, the secondary panel is hidden while the primary panel remains usable.
-
-## Stack
-
-Next.js App Router · React · TypeScript · CSS Modules · lucide-react.
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
 
 ## License
 
