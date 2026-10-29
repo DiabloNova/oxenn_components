@@ -21,7 +21,7 @@ export default function GradientWavesPage() {
         <div className={styles.canvas}>
           <GradientWaves
             horizonColor="#8b5cf6"
-            waveColor="#e879f9"
+            waveColor="#79d3f9"
             crestColor="#f5d0fe"
             speed={0.4}
             amplitude={2.5}
@@ -39,11 +39,11 @@ export default function GradientWavesPage() {
         </div>
       </section>
       <section className={styles.details}>
-        <div><span>01 / PALETTE</span><p>Violet horizon · fuchsia wave · pearl crest</p></div>
+        <div><span>01 / PALETTE</span><p>Violet horizon · sky-blue wave · pearl crest</p></div>
         <div><span>02 / INTERACTION</span><p>Pointer parallax and click-triggered swell</p></div>
         <div><span>03 / PERFORMANCE</span><p>Canvas rendering, responsive sizing, reduced-motion support</p></div>
       </section>
-      <footer className={styles.bottomNote}><span>GRADIENT WAVES</span><span>REACT · CANVAS · CSS</span></footer>
+      <footer className={styles.bottomNote}><span>GRADIENT WAVES</span><span>REACT · WEBGL2 · CSS</span></footer>
     </main>
   );
 }
