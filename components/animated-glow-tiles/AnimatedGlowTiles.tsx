@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type PointerEvent } from "react";
+import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import styles from "./AnimatedGlowTiles.module.css";
 
 type Tile = {
@@ -71,7 +71,7 @@ export default function AnimatedGlowTiles() {
         onPointerMove={handlePointerMove}
         onPointerLeave={resetTilt}
         data-paused={motionPaused}
-        style={{ "--tilt-x": `${tilt.x}deg`, "--tilt-y": `${tilt.y}deg` } as React.CSSProperties}
+        style={{ "--tilt-x": `${tilt.x}deg`, "--tilt-y": `${tilt.y}deg` } as CSSProperties}
       >
         <div className={styles.ambientGlow} aria-hidden="true" />
         <div className={styles.sceneGrain} aria-hidden="true" />
