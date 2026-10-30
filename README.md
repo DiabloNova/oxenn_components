@@ -32,7 +32,7 @@ import GlassSurface from "@/components/glass-surface/GlassSurface";
 </GlassSurface>
 ```
 
-The `backdrop` prop accepts an image, video, canvas, or React ref to one of those elements. The `shape` prop accepts a transparent image path and derives its refractive silhouette from the image alpha channel.
+The `backdrop` prop accepts an image, video, canvas, or React ref to one of those elements. Video backdrops update during playback; for a canvas backdrop, increment `backdropVersion` whenever its pixels change so the WebGL texture is refreshed. The `shape` prop accepts a transparent image path and derives its refractive silhouette from the image alpha channel. This repository keeps the implementation local, so the shadcn registry install command is not required here.
 
 ## Gradient Waves
 
