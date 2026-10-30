@@ -919,6 +919,13 @@ const FluidGlass = ({
         body.anchorY = clamp(body.anchorY, edge, Math.max(edge, cssHeight - edge));
       }
       drawText();
+      const handle = handleRef.current;
+      if (handle) {
+        const reach = radius() * 2;
+        handle.style.width = `${reach.toFixed(1)}px`;
+        handle.style.height = `${reach.toFixed(1)}px`;
+        handle.style.transform = `translate3d(${(body.x - reach / 2).toFixed(1)}px, ${(body.y - reach / 2).toFixed(1)}px, 0)`;
+      }
     };
 
     const radius = () => {
