@@ -238,12 +238,24 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     image.src = url;
   };
 
+  const assertNoGlError = (operation) => {
+    const error = gl.getError();
+    if (error !== gl.NO_ERROR) {
+      throw new Error(operation + ' failed with WebGL error ' + error);
+    }
+  };
+
   const upload = (node) => {
     const still = node instanceof HTMLImageElement;
     gl.bindTexture(gl.TEXTURE_2D, backdropTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, node);
-    if (still) gl.generateMipmap(gl.TEXTURE_2D);
+    assertNoGlError('Backdrop texture upload');
+    if (still) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+      assertNoGlError('Backdrop mipmap generation');
+    }
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, still ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+    assertNoGlError('Backdrop texture configuration');
     [picture.width, picture.height] = sourceSize(node);
     picture.mipmapped = still;
     picture.ready = true;
