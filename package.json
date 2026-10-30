@@ -7,7 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:registry": "node scripts/generate-component-registry.mjs",
+    "check:registry": "node scripts/generate-component-registry.mjs --check",
+    "test:registry": "node --test tests/component-registry.test.mjs",
+    "predev": "npm run generate:registry",
+    "prebuild": "npm run generate:registry",
+    "pretypecheck": "npm run generate:registry"
   },
   "dependencies": {
     "@types/node": "^22.15.0",

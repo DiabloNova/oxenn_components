@@ -21,7 +21,7 @@ function withComponents(run) {
 function addPage(componentsDir, slug, metadata) {
   const directory = path.join(componentsDir, slug);
   mkdirSync(directory, { recursive: true });
-  writeFileSync(path.join(directory, "page.tsx"), "export default function Page() { return null; }\\n");
+  writeFileSync(path.join(directory, "page.tsx"), "export default function Page() { return null; }\n");
   if (metadata !== undefined) {
     writeFileSync(path.join(directory, "component.json"), JSON.stringify(metadata));
   }
@@ -33,8 +33,9 @@ test("discovers only direct component routes and applies metadata with stable or
     addPage(componentsDir, "zeta-panel", { title: "Zeta Panel", icon: "Layers3", order: 20 });
     addPage(componentsDir, "alpha-view", { title: "Alpha View", icon: "Waves", order: 10, navigation: false });
     mkdirSync(path.join(componentsDir, "not-a-route"));
+    mkdirSync(path.join(componentsDir, "not-a-file-route", "page.tsx"), { recursive: true });
     mkdirSync(path.join(componentsDir, "nested", "child"), { recursive: true });
-    writeFileSync(path.join(componentsDir, "nested", "child", "page.tsx"), "export default function Page() { return null; }\\n");
+    writeFileSync(path.join(componentsDir, "nested", "child", "page.tsx"), "export default function Page() { return null; }\n");
 
     assert.deepEqual(discoverComponents(componentsDir), [
       { slug: "alpha-view", href: "/components/alpha-view", title: "Alpha View", icon: "Waves", order: 10, navigation: false },
@@ -67,6 +68,6 @@ test("renders deterministic TypeScript output from the registry entries", () => 
   const first = renderRegistry(entries);
   assert.equal(first, renderRegistry(entries));
   assert.match(first, /export const componentRegistry/);
-  assert.match(first, /"\\/components\\/radar"/);
+  assert.match(first, /"\/components\/radar"/);
   assert.match(first, /"navigation": true/);
 });
