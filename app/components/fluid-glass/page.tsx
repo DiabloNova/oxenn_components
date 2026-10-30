@@ -91,7 +91,7 @@ export default function FluidGlassPage() {
           <section className={[styles.preview, isFullscreen ? styles.fullscreenPreview : ""].filter(Boolean).join(" ")} aria-label="Fluid Glass live preview">
             <div className={styles.previewMeta}>
               <div className={styles.previewStatus}>
-                <span className={styles.liveDot} />
+                <span className={[styles.liveDot, webglAvailable === false ? styles.unavailableDot : ""].filter(Boolean).join(" ")} />
                 <span>
                   {isReady
                     ? "LIVE WEBGL RENDER"
