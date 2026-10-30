@@ -105,7 +105,7 @@ export default function GlassSurfacePage() {
             <div>
               <span className={styles.sectionIndex}>01 / LIVE REFRACTION</span>
               <h2 id="refraction-title">Let the background bend.</h2>
-              <p>Move the glass across the artwork and tune the optical response.</p>
+              <p>Tune the optical response over the artwork.</p>
             </div>
             <span className={styles.liveTag}><i /> LIVE SURFACE</span>
           </div>
