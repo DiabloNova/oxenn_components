@@ -671,10 +671,12 @@ const FluidGlass = ({
         key === 'content' ? CONTENT : fragmentFor(a, b, sampled === '1')
       );
       const program = gl.createProgram();
-      gl.attachShader(program, vertex);
-      gl.attachShader(program, fragment);
-      gl.linkProgram(program);
-      const entry = { program, fragment, uniforms: null, failed: false };
+      const entry = { program, fragment, uniforms: null, failed: !program || !fragment || !vertex };
+      if (!entry.failed) {
+        gl.attachShader(program, vertex);
+        gl.attachShader(program, fragment);
+        gl.linkProgram(program);
+      }
       programs.set(key, entry);
       return entry;
     };
@@ -781,6 +783,7 @@ const FluidGlass = ({
     let current = null;
 
     const drawText = () => {
+      if (disposed || gl.isContextLost()) return;
       const s = settingsRef.current;
       const computed = getComputedStyle(container);
       const family = s.fontFamily || computed.fontFamily || 'sans-serif';
@@ -837,6 +840,7 @@ const FluidGlass = ({
     };
 
     const loadMedia = () => {
+      if (disposed) return;
       const s = settingsRef.current;
       if (s.src === media.src) return;
       releaseClip();
@@ -884,6 +888,7 @@ const FluidGlass = ({
     };
 
     const resize = () => {
+      if (disposed || gl.isContextLost()) return;
       const s = settingsRef.current;
       const rect = container.getBoundingClientRect();
       const cssWidth = Math.max(1, rect.width);
@@ -976,7 +981,7 @@ const FluidGlass = ({
 
     const frame = now => {
       raf = 0;
-      if (lost) return;
+      if (disposed || lost || gl.isContextLost()) return;
       const gap = now - tick;
       tick = now;
       if (gap > 2 && gap < 100) pace += (gap - pace) * 0.1;
@@ -1363,23 +1368,26 @@ const FluidGlass = ({
     });
     resizeObserver.observe(container);
     const playback = () => {
-      if (!media.clip) return;
+      if (disposed || !media.clip) return;
       if (visible && pageVisible) media.clip.play().catch(() => {});
       else media.clip.pause();
     };
     const intersection = new IntersectionObserver(entries => {
+      if (disposed) return;
       visible = entries.some(entry => entry.isIntersecting);
       playback();
       wake();
     });
     intersection.observe(container);
     const onVisibility = () => {
+      if (disposed) return;
       pageVisible = document.visibilityState !== 'hidden';
       playback();
       wake();
     };
     document.addEventListener('visibilitychange', onVisibility);
     const themeObserver = new MutationObserver(() => {
+      if (disposed) return;
       drawText();
       wake();
     });
