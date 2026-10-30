@@ -21,6 +21,7 @@ export default function HomePage() {
             <Link href="/" onClick={() => setMenuOpen(false)}><Command size={16} /> Component lab home</Link>
             <Link href="/components/floating-bottom-nav" onClick={() => setMenuOpen(false)}><Layers3 size={16} /> Floating bottom navigation <ArrowUpRight size={14} /></Link>
             <Link href="/components/gradient-waves" onClick={() => setMenuOpen(false)}><Waves size={16} /> Gradient Waves <ArrowUpRight size={14} /></Link>
+            <Link href="/components/glass-surface" onClick={() => setMenuOpen(false)}><Droplets size={16} /> Glass Surface <ArrowUpRight size={14} /></Link>
             <Link href="/components/fluid-glass" onClick={() => setMenuOpen(false)}><Droplets size={16} /> Fluid Glass <ArrowUpRight size={14} /></Link>
             <a href="https://github.com/DiabloNova/oxenn_components" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}><ArrowUpRight size={16} /> GitHub repository</a>
           </nav>}
