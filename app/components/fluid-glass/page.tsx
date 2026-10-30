@@ -92,13 +92,24 @@ export default function FluidGlassPage() {
             <div className={styles.previewMeta}>
               <div className={styles.previewStatus}>
                 <span className={styles.liveDot} />
-                <span>{isReady ? "LIVE WEBGL RENDER" : "INITIALIZING OPTICS ENGINE"}</span>
-                <span className={styles.engineTag}>WEBGL 2</span>
+                <span>
+                  {isReady
+                    ? "LIVE WEBGL RENDER"
+                    : webglAvailable === false
+                      ? "STATIC PREVIEW · WEBGL 2 UNAVAILABLE"
+                      : "INITIALIZING OPTICS ENGINE"}
+                </span>
+                <span className={styles.engineTag}>{webglAvailable === false ? "UNAVAILABLE" : "WEBGL 2"}</span>
               </div>
               <div className={styles.previewActions}>
                 {!isFullscreen && (
                   <span className={styles.interactionHint}>
-                    <MousePointer2 size={13} /> MOVE · CLICK TO MORPH
+                    <MousePointer2 size={13} />
+                    {interaction === "follow"
+                      ? "MOVE · CLICK TO MORPH"
+                      : interaction === "drag"
+                        ? "DRAG TO MOVE · CLICK TO MORPH"
+                        : "IGNORE POINTER · CLICK TO MORPH"}
                   </span>
                 )}
                 <button
@@ -186,7 +197,7 @@ export default function FluidGlassPage() {
                 </span>
                 <select value={interaction} onChange={(event) => setInteraction(event.target.value as InteractionMode)}>
                   <option value="follow">Follow pointer</option>
-                  <option value="static">Static · click to morph</option>
+                  <option value="static">Ignore pointer · click to morph</option>
                   <option value="drag">Drag and release</option>
                 </select>
               </label>
