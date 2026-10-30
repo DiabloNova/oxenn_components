@@ -1,4 +1,5 @@
 .glass-surface {
+  color-scheme: dark;
   position: relative;
   display: flex;
   align-items: center;
@@ -157,7 +158,7 @@
   }
 }
 
-.glass-surface:focus-visible {
+.glass-surface:focus-within {
   outline: 2px solid light-dark(#007aff, #0a84ff);
   outline-offset: 2px;
 }
