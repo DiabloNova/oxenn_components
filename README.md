@@ -15,8 +15,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
+- **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells. The showcase uses a violet horizon, `#79d3f9` waves, and pearl crests.
 
-Open the hamburger menu on the home page to navigate to the floating bottom navigation showcase.
+Open the hamburger menu on the home page to navigate to the Floating Bottom Navigation and Gradient Waves showcases.
+
+## Gradient Waves
+
+The component source is taken from the official [React Bits GradientWaves JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/GradientWaves-JS-CSS.json). To install it in a compatible shadcn setup, React Bits documents this command:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/GradientWaves-JS-CSS
+```
+
+The component is checked into `components/gradient-waves/` so it remains locally owned and works with this repository's App Router showcase.
 
 ## Floating bottom navigation
 
