@@ -1142,7 +1142,8 @@ const FluidGlass = ({
           gl.bindVertexArray(vao);
           bindContent(fallback.uniforms, s);
           gl.drawArrays(gl.TRIANGLES, 0, 3);
-        } else if (!fallback.failed && visible && pageVisible) {
+        }
+        if ((!entry.failed || !fallback.failed) && visible && pageVisible) {
           raf = requestAnimationFrame(frame);
         }
         return;
