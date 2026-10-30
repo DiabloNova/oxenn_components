@@ -6,6 +6,35 @@ import { bendShape, traceShape } from './glass-shape';
 import { startGlassRenderer } from './glass-renderer';
 import './GlassSurface.css';
 
+/**
+ * @typedef {Object} GlassSurfaceProps
+ * @property {import('react').ReactNode} [children]
+ * @property {number|string} [width]
+ * @property {number|string} [height]
+ * @property {number} [borderRadius]
+ * @property {number} [borderWidth]
+ * @property {number} [brightness]
+ * @property {number} [opacity]
+ * @property {number} [blur]
+ * @property {number} [displace]
+ * @property {number} [backgroundOpacity]
+ * @property {number} [saturation]
+ * @property {number} [distortionScale]
+ * @property {number} [redOffset]
+ * @property {number} [greenOffset]
+ * @property {number} [blueOffset]
+ * @property {'R'|'G'|'B'|'A'} [xChannel]
+ * @property {'R'|'G'|'B'|'A'} [yChannel]
+ * @property {string} [mixBlendMode]
+ * @property {boolean} [refraction]
+ * @property {'auto'|'webgl'} [renderer]
+ * @property {HTMLImageElement|HTMLVideoElement|HTMLCanvasElement|import('react').RefObject<any>|null} [backdrop]
+ * @property {string} [shape]
+ * @property {string} [className]
+ * @property {import('react').CSSProperties} [style]
+ */
+
+/** @param {GlassSurfaceProps} props */
 const GlassSurface = ({
   children,
   width = 200,
