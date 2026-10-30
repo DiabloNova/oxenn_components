@@ -15,7 +15,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
-- **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells. The showcase uses a violet horizon, `#79d3f9` waves, and pearl crests.
+- **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
+- **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
 
 Open the hamburger menu on the home page to navigate to all component showcases.
@@ -43,6 +44,16 @@ pnpm dlx shadcn@latest add @react-bits/GradientWaves-JS-CSS
 ```
 
 The component is checked into `components/gradient-waves/` so it remains locally owned and works with this repository's App Router showcase.
+
+## Topography
+
+The component source is taken from the official [React Bits Topography JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/Topography-JS-CSS.json). To install it in a compatible shadcn setup:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/Topography-JS-CSS
+```
+
+The component is checked into `components/topography/` and uses WebGL2 for animated terrain rendering. It supports reduced-motion preferences and pointer/click interactions.
 
 ## Floating bottom navigation
 
