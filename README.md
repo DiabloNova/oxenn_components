@@ -25,12 +25,23 @@ Open the hamburger menu on the home page to navigate to all component showcases.
 
 The component is adapted from the supplied React Bits GlassSurface JS/CSS source and lives in `components/glass-surface/`. It is checked into this repository directly so the existing App Router project does not need a separate shadcn configuration. The showcase demonstrates SVG/frosted rendering, WebGL2 image refraction over a local backdrop, and transparent-image shape mapping. The WebGL renderer cleans up partially allocated GPU resources and falls back when WebGL2 or texture access is unavailable.
 
-```jsx
+```tsx
 import GlassSurface from "@/components/glass-surface/GlassSurface";
 
-<GlassSurface width={496} height={62} borderRadius={57} distortionScale={130} displace={0.5} backgroundOpacity={0.1}>
-  <span>Your content</span>
-</GlassSurface>
+export default function GlassSurfaceExample() {
+  return (
+    <GlassSurface
+      width={496}
+      height={62}
+      borderRadius={57}
+      distortionScale={130}
+      displace={0.5}
+      backgroundOpacity={0.1}
+    >
+      <span>Your content</span>
+    </GlassSurface>
+  );
+}
 ```
 
 The `backdrop` prop accepts an image, video, canvas, or React ref to one of those elements. Video backdrops update during playback; for a canvas backdrop, increment `backdropVersion` whenever its pixels change so the WebGL texture is refreshed. The `shape` prop accepts a transparent image path and derives its refractive silhouette from the image alpha channel. This repository keeps the implementation local, so the shadcn registry install command is not required here.

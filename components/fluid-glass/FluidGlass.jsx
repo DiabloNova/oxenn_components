@@ -1134,7 +1134,8 @@ const FluidGlass = ({
 
       if (!current) {
         const fallback = request('content');
-        if (ready(fallback)) {
+        const fallbackReady = ready(fallback);
+        if (fallbackReady) {
           gl.viewport(0, 0, canvas.width, canvas.height);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
@@ -1143,7 +1144,9 @@ const FluidGlass = ({
           bindContent(fallback.uniforms, s);
           gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
-        if ((!entry.failed || !fallback.failed) && visible && pageVisible) {
+        const primaryPending = !entry.failed && !entry.uniforms;
+        const fallbackPending = !fallback.failed && !fallback.uniforms;
+        if ((primaryPending || fallbackPending) && visible && pageVisible) {
           raf = requestAnimationFrame(frame);
         }
         return;
