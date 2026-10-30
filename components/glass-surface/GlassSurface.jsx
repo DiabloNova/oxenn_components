@@ -29,6 +29,7 @@ import './GlassSurface.css';
  * @property {boolean} [refraction]
  * @property {'auto'|'webgl'} [renderer]
  * @property {HTMLImageElement|HTMLVideoElement|HTMLCanvasElement|import('react').RefObject<any>|null} [backdrop]
+ * @property {string|number} [backdropVersion] - Change this value when a canvas backdrop's pixels change.
  * @property {string} [shape]
  * @property {string} [className]
  * @property {import('react').CSSProperties} [style]
@@ -57,6 +58,7 @@ const GlassSurface = ({
   refraction = true,
   renderer = 'auto',
   backdrop,
+  backdropVersion,
   shape,
   className = '',
   style = {}
@@ -85,9 +87,11 @@ const GlassSurface = ({
   const mapUrlRef = useRef('');
   const canvasRef = useRef(null);
   const settingsRef = useRef(null);
+  const renderWakeRef = useRef(null);
 
   settingsRef.current = {
     backdrop,
+    backdropVersion,
     displace,
     saturation,
     distortionScale,
@@ -237,9 +241,14 @@ const GlassSurface = ({
       element,
       settingsRef,
       mapUrlRef,
+      wakeRef: renderWakeRef,
       onFailure: () => setWebglFailed(true)
     });
   }, [webgl]);
+
+  useEffect(() => {
+    renderWakeRef.current?.();
+  }, [backdrop, backdropVersion, boxSize, width, height, displace, saturation, distortionScale, redOffset, greenOffset, blueOffset, xChannel, yChannel]);
 
   function supportsSVGFilters() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return false;
