@@ -24,7 +24,7 @@ export default function TopographyPage() {
         <div className={styles.previewMeta}>
           <span>LIVE PREVIEW · WEBGL2</span>
           <span className={styles.hint}><MousePointer2 size={13} /> Move · Click · Explore</span>
-          <button className={styles.themeButton} type="button" onClick={() => setLightMode(value => !value)} aria-label={lightMode ? "Switch to dark mode" : "Switch to light mode"}>
+          <button className={styles.themeButton} type="button" onClick={() => setLightMode(value => !value)}>
             {lightMode ? <Moon size={16} /> : <Sun size={16} />}{lightMode ? "Dark terrain" : "Light terrain"}
           </button>
         </div>
