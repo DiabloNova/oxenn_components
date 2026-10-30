@@ -15,9 +15,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
-- **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells. The showcase uses a violet horizon, `#79d3f9` waves, and pearl crests.
+- **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
+- **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering. The showcase uses a violet horizon, `#79d3f9` waves, and pearl crests.
 
-Open the hamburger menu on the home page to navigate to the Floating Bottom Navigation and Gradient Waves showcases.
+Open the hamburger menu on the home page to navigate to the Floating Bottom Navigation, Gradient Waves, and Fluid Glass showcases.
 
 ## Gradient Waves
 
@@ -57,6 +58,38 @@ export default function DashboardLayout() {
 }
 ```
 
+## Fluid Glass
+
+The component source is based on the official [React Bits FluidGlass JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/FluidGlass-JS-CSS.json). To install it in a compatible shadcn setup, React Bits documents:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/FluidGlass-JS-CSS
+```
+
+The component is checked into `components/fluid-glass/` and is demonstrated at `/components/fluid-glass`. The showcase uses a local SVG texture so image refraction works without a third-party asset host.
+
+```jsx
+import FluidGlass from "@/components/fluid-glass/FluidGlass";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <FluidGlass
+    text="AEO/ GEO/ SEO"
+    src="/fluid-glass-hero.svg"
+    shape="pill"
+    size={180}
+    refraction={0.6}
+    dispersion={0.4}
+    interaction="follow"
+    tint={0.25}
+    reflection={1}
+    shadow={0.5}
+    elevation={0.4}
+    idle
+    morphOnClick
+    intro
+  />
+</div>
+```
 ## Quality checks
 
 ```bash
