@@ -248,7 +248,7 @@ const GlassSurface = ({
 
   useEffect(() => {
     renderWakeRef.current?.();
-  }, [backdrop, backdropVersion, boxSize, width, height, borderWidth, blur, opacity, brightness, mixBlendMode, shape, displace, saturation, distortionScale, redOffset, greenOffset, blueOffset, xChannel, yChannel]);
+  }, [backdrop, backdropVersion, boxSize, width, height, borderRadius, borderWidth, blur, opacity, brightness, mixBlendMode, shape, loaded, displace, saturation, distortionScale, redOffset, greenOffset, blueOffset, xChannel, yChannel, style, className]);
 
   function supportsSVGFilters() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return false;

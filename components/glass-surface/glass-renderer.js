@@ -269,7 +269,7 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     if (!settings) return;
     if (mapUrlRef.current && mapUrlRef.current !== map.url) loadMap(mapUrlRef.current);
 
-    const node = resolveBackdrop(settings.backdrop);
+    const node = syncBackdropNode();
     if (!node) return;
     const isVideo = node instanceof HTMLVideoElement;
     if (isVideo) frame = requestAnimationFrame(tick);
@@ -362,7 +362,6 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
   const wake = () => {
     if (!frame && visible && !document.hidden && !disposed) frame = requestAnimationFrame(tick);
   };
-  const backdropNode = resolveBackdrop(settingsRef.current?.backdrop);
   const onBackdropReady = () => {
     picture.ready = false;
     picture.key = '';
@@ -370,17 +369,41 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     wake();
   };
   const onBackdropFailure = () => onFailure();
-  if (backdropNode instanceof HTMLImageElement) {
-    backdropNode.addEventListener('load', onBackdropReady);
-    backdropNode.addEventListener('error', onBackdropFailure);
-  } else if (backdropNode instanceof HTMLVideoElement) {
-    backdropNode.addEventListener('loadeddata', onBackdropReady);
-    backdropNode.addEventListener('playing', wake);
-    backdropNode.addEventListener('seeked', wake);
-  }
   const resizeObserver = new ResizeObserver(wake);
   resizeObserver.observe(element);
-  if (backdropNode instanceof Element) resizeObserver.observe(backdropNode);
+  let backdropNode = null;
+  const unbindBackdrop = (node) => {
+    if (node instanceof HTMLImageElement) {
+      node.removeEventListener('load', onBackdropReady);
+      node.removeEventListener('error', onBackdropFailure);
+    } else if (node instanceof HTMLVideoElement) {
+      node.removeEventListener('loadeddata', onBackdropReady);
+      node.removeEventListener('playing', wake);
+      node.removeEventListener('seeked', wake);
+    }
+    if (node instanceof Element) resizeObserver.unobserve(node);
+  };
+  const syncBackdropNode = () => {
+    const nextNode = resolveBackdrop(settingsRef.current?.backdrop);
+    if (nextNode === backdropNode) return nextNode;
+    if (backdropNode) unbindBackdrop(backdropNode);
+    backdropNode = nextNode;
+    picture.node = null;
+    picture.key = '';
+    picture.ready = false;
+    drawn = '';
+    if (backdropNode instanceof HTMLImageElement) {
+      backdropNode.addEventListener('load', onBackdropReady);
+      backdropNode.addEventListener('error', onBackdropFailure);
+    } else if (backdropNode instanceof HTMLVideoElement) {
+      backdropNode.addEventListener('loadeddata', onBackdropReady);
+      backdropNode.addEventListener('playing', wake);
+      backdropNode.addEventListener('seeked', wake);
+    }
+    if (backdropNode instanceof Element) resizeObserver.observe(backdropNode);
+    return backdropNode;
+  };
+  syncBackdropNode();
   const onLost = (event) => {
     event.preventDefault();
     onFailure();
@@ -390,6 +413,15 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     wake();
   });
   intersection.observe(element);
+  // Ref-backed sources may become available after renderer startup. DOM and
+  // class/style mutations can also change the backdrop or surface geometry.
+  const domObserver = new MutationObserver(wake);
+  domObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  });
   document.addEventListener('visibilitychange', wake);
   window.addEventListener('resize', wake);
   window.addEventListener('scroll', wake, true);
@@ -401,18 +433,12 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     disposed = true;
     cancelAnimationFrame(frame);
     intersection.disconnect();
+    domObserver.disconnect();
     resizeObserver.disconnect();
     document.removeEventListener('visibilitychange', wake);
     window.removeEventListener('resize', wake);
     window.removeEventListener('scroll', wake, true);
-    if (backdropNode instanceof HTMLImageElement) {
-      backdropNode.removeEventListener('load', onBackdropReady);
-      backdropNode.removeEventListener('error', onBackdropFailure);
-    } else if (backdropNode instanceof HTMLVideoElement) {
-      backdropNode.removeEventListener('loadeddata', onBackdropReady);
-      backdropNode.removeEventListener('playing', wake);
-      backdropNode.removeEventListener('seeked', wake);
-    }
+    if (backdropNode) unbindBackdrop(backdropNode);
     if (wakeRef?.current === wake) wakeRef.current = null;
     canvas.removeEventListener('webglcontextlost', onLost);
     disposeResources();
