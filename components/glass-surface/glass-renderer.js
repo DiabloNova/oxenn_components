@@ -372,6 +372,10 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
   const resizeObserver = new ResizeObserver(wake);
   resizeObserver.observe(element);
   let backdropNode = null;
+  const backdropObserver = new MutationObserver(() => {
+    syncBackdropNode();
+    wake();
+  });
   const unbindBackdrop = (node) => {
     if (node instanceof HTMLImageElement) {
       node.removeEventListener('load', onBackdropReady);
@@ -387,6 +391,7 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     const nextNode = resolveBackdrop(settingsRef.current?.backdrop);
     if (nextNode === backdropNode) return nextNode;
     if (backdropNode) unbindBackdrop(backdropNode);
+    backdropObserver.disconnect();
     backdropNode = nextNode;
     picture.node = null;
     picture.key = '';
@@ -400,7 +405,15 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
       backdropNode.addEventListener('playing', wake);
       backdropNode.addEventListener('seeked', wake);
     }
-    if (backdropNode instanceof Element) resizeObserver.observe(backdropNode);
+    if (backdropNode instanceof Element) {
+      resizeObserver.observe(backdropNode);
+      if (!element.contains(backdropNode)) {
+        backdropObserver.observe(backdropNode, { attributes: true, attributeFilter: ['class', 'style'] });
+        if (backdropNode.parentElement) {
+          backdropObserver.observe(backdropNode.parentElement, { childList: true });
+        }
+      }
+    }
     return backdropNode;
   };
   syncBackdropNode();
@@ -413,10 +426,14 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     wake();
   });
   intersection.observe(element);
-  // Ref-backed sources may become available after renderer startup. DOM and
-  // class/style mutations can also change the backdrop or surface geometry.
-  const domObserver = new MutationObserver(wake);
-  domObserver.observe(document.documentElement, {
+  // Observe only this surface subtree. ResizeObserver and the window listeners
+  // below cover geometry changes outside it; an external backdrop is observed
+  // separately by backdropObserver.
+  const domObserver = new MutationObserver(() => {
+    syncBackdropNode();
+    wake();
+  });
+  domObserver.observe(element, {
     childList: true,
     subtree: true,
     attributes: true,
@@ -434,6 +451,7 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     cancelAnimationFrame(frame);
     intersection.disconnect();
     domObserver.disconnect();
+    backdropObserver.disconnect();
     resizeObserver.disconnect();
     document.removeEventListener('visibilitychange', wake);
     window.removeEventListener('resize', wake);
