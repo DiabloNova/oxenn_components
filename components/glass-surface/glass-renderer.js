@@ -138,7 +138,7 @@ const contentBox = (node) => {
   };
 };
 
-export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, onFailure }) {
+export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wakeRef, onFailure }) {
   const gl = canvas?.getContext('webgl2', {
     alpha: true,
     premultipliedAlpha: true,
@@ -217,6 +217,7 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, on
 
   const loadMap = (url) => {
     map.url = url;
+    map.ready = false;
     const image = new Image();
     image.onload = () => {
       if (disposed || map.url !== url) return;
@@ -229,6 +230,10 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, on
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapCanvas);
       map.ready = true;
       drawn = '';
+      wake();
+    };
+    image.onerror = () => {
+      if (!disposed && map.url === url) onFailure();
     };
     image.src = url;
   };
@@ -247,7 +252,6 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, on
   const tick = () => {
     frame = 0;
     if (disposed || !visible || document.hidden) return;
-    frame = requestAnimationFrame(tick);
 
     const settings = settingsRef.current;
     if (!settings) return;
@@ -255,13 +259,16 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, on
 
     const node = resolveBackdrop(settings.backdrop);
     if (!node) return;
+    const isVideo = node instanceof HTMLVideoElement;
+    if (isVideo) frame = requestAnimationFrame(tick);
     let key = '';
     if (node instanceof HTMLImageElement) {
       key = node.complete && node.naturalWidth ? node.currentSrc || node.src : '';
     } else if (node instanceof HTMLVideoElement) {
       key = node.readyState >= 2 ? node.currentSrc + '|' + node.currentTime : '';
     } else {
-      key = node.width + 'x' + node.height + '|' + performance.now();
+      // Canvas pixels are treated as static until the caller changes backdropVersion.
+      key = node.width + 'x' + node.height + '|' + String(settings.backdropVersion ?? '');
     }
 
     if (key && (node !== picture.node || key !== picture.key)) {
@@ -341,8 +348,25 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, on
   };
 
   const wake = () => {
-    if (!frame && visible && !document.hidden) frame = requestAnimationFrame(tick);
+    if (!frame && visible && !document.hidden && !disposed) frame = requestAnimationFrame(tick);
   };
+  const backdropNode = resolveBackdrop(settingsRef.current?.backdrop);
+  const onBackdropReady = () => {
+    picture.ready = false;
+    picture.key = '';
+    drawn = '';
+    wake();
+  };
+  if (backdropNode instanceof HTMLImageElement) {
+    backdropNode.addEventListener('load', onBackdropReady);
+  } else if (backdropNode instanceof HTMLVideoElement) {
+    backdropNode.addEventListener('loadeddata', onBackdropReady);
+    backdropNode.addEventListener('playing', wake);
+    backdropNode.addEventListener('seeked', wake);
+  }
+  const resizeObserver = new ResizeObserver(wake);
+  resizeObserver.observe(element);
+  if (backdropNode instanceof Element) resizeObserver.observe(backdropNode);
   const onLost = (event) => {
     event.preventDefault();
     onFailure();
@@ -353,14 +377,28 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, on
   });
   intersection.observe(element);
   document.addEventListener('visibilitychange', wake);
+  window.addEventListener('resize', wake);
+  window.addEventListener('scroll', wake, true);
   canvas.addEventListener('webglcontextlost', onLost);
+  if (wakeRef) wakeRef.current = wake;
   wake();
 
   return () => {
     disposed = true;
     cancelAnimationFrame(frame);
     intersection.disconnect();
+    resizeObserver.disconnect();
     document.removeEventListener('visibilitychange', wake);
+    window.removeEventListener('resize', wake);
+    window.removeEventListener('scroll', wake, true);
+    if (backdropNode instanceof HTMLImageElement) {
+      backdropNode.removeEventListener('load', onBackdropReady);
+    } else if (backdropNode instanceof HTMLVideoElement) {
+      backdropNode.removeEventListener('loadeddata', onBackdropReady);
+      backdropNode.removeEventListener('playing', wake);
+      backdropNode.removeEventListener('seeked', wake);
+    }
+    if (wakeRef?.current === wake) wakeRef.current = null;
     canvas.removeEventListener('webglcontextlost', onLost);
     disposeResources();
   };
