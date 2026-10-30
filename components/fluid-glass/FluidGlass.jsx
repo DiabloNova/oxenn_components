@@ -211,8 +211,8 @@ vec4 frosted(vec2 w, vec2 gx, vec2 gy) {
 
 vec3 studio(vec3 d) {
   vec2 a = vec2(atan(d.x, d.z), d.y);
-  float key = smoothstep(0.42, 0.22, abs(a.x + 0.62)) * smoothstep(0.3, 0.12, abs(a.y - 0.5));
-  float strip = smoothstep(0.12, 0.05, abs(a.x - 0.95)) * smoothstep(0.8, 0.35, abs(a.y - 0.05));
+  float key = (1.0 - smoothstep(0.22, 0.42, abs(a.x + 0.62))) * (1.0 - smoothstep(0.12, 0.3, abs(a.y - 0.5)));
+  float strip = (1.0 - smoothstep(0.05, 0.12, abs(a.x - 0.95))) * (1.0 - smoothstep(0.35, 0.8, abs(a.y - 0.05)));
   float dome = smoothstep(0.0, 1.0, d.z) * 0.04;
   return vec3(18.0) * key + vec3(8.0) * strip + vec3(dome);
 }
@@ -377,7 +377,7 @@ void traceInterior(inout Trace tr, vec3 rd, float eps) {
 }
 
 float bandOf(float cosi, float scatter) {
-  return max(smoothstep(0.42, 0.12, cosi), smoothstep(0.06, 0.24, scatter));
+  return max(1.0 - smoothstep(0.12, 0.42, cosi), smoothstep(0.06, 0.24, scatter));
 }
 
 vec4 shadeTrace(Trace tr, vec3 rd, vec4 background, vec4 tone, vec2 w, vec2 tx, vec2 ty, vec2 rx, vec2 ry) {
@@ -465,19 +465,34 @@ void main() {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+let colorProbe = null;
+
 const parseColor = value => {
   const text = String(value || '').trim();
+  if (!text) return null;
   const hex = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text);
   if (hex) {
     const full = hex[1].length === 3 ? hex[1].replace(/./g, digit => digit + digit) : hex[1];
     return [0, 2, 4].map(index => parseInt(full.slice(index, index + 2), 16) / 255).concat(1);
   }
-  const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+%?))?/i.exec(text);
-  if (rgb) {
-    const alpha = rgb[4] === undefined ? 1 : rgb[4].endsWith('%') ? parseFloat(rgb[4]) / 100 : parseFloat(rgb[4]);
-    return [rgb[1], rgb[2], rgb[3]].map(channel => clamp(parseFloat(channel) / 255, 0, 1)).concat(clamp(alpha, 0, 1));
+
+  let normalized = text;
+  const directRgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+%?))?/i.exec(normalized);
+  if (!directRgb && typeof document !== 'undefined' && typeof window !== 'undefined' && window.CSS?.supports?.('color', text)) {
+    if (!colorProbe) {
+      colorProbe = document.createElement('span');
+      colorProbe.style.position = 'absolute';
+      colorProbe.style.visibility = 'hidden';
+      document.documentElement.appendChild(colorProbe);
+    }
+    colorProbe.style.color = text;
+    normalized = getComputedStyle(colorProbe).color;
   }
-  return null;
+
+  const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+%?))?/i.exec(normalized);
+  if (!rgb) return null;
+  const alpha = rgb[4] === undefined ? 1 : rgb[4].endsWith('%') ? parseFloat(rgb[4]) / 100 : parseFloat(rgb[4]);
+  return [rgb[1], rgb[2], rgb[3]].map(channel => clamp(parseFloat(channel) / 255, 0, 1)).concat(clamp(alpha, 0, 1));
 };
 
 const compile = (gl, type, source) => {
@@ -586,6 +601,7 @@ const FluidGlass = ({
   const canvasRef = useRef(null);
   const handleRef = useRef(null);
   const wakeRef = useRef(null);
+  const morphRef = useRef(null);
   const [generation, setGeneration] = useState(0);
 
   const cycle = Array.isArray(shapes) && shapes.length ? shapes.filter(name => SHAPES.includes(name)) : SHAPES;
@@ -631,6 +647,7 @@ const FluidGlass = ({
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
+    let disposed = false;
     const gl = canvas.getContext('webgl2', {
       alpha: true,
       premultipliedAlpha: true,
@@ -740,6 +757,14 @@ const FluidGlass = ({
     let flying = false;
     const morph = { from: settingsRef.current.shape, to: settingsRef.current.shape, t: 1, pending: null };
     let requested = settingsRef.current.shape;
+    morphRef.current = () => {
+      const s = settingsRef.current;
+      if (!s.morphOnClick || s.cycle.length < 2) return;
+      const index = s.cycle.indexOf(morph.pending || morph.to);
+      morph.pending = s.cycle[(index + 1) % s.cycle.length];
+      calm = false;
+      wakeRef.current?.();
+    };
     let presence = settingsRef.current.intro && !reduced && generation === 0 ? 0 : 1;
     if (presence === 1) spring.scale = 1;
     let time = 0;
@@ -829,7 +854,7 @@ const FluidGlass = ({
         clip.preload = 'auto';
         clip.src = s.src;
         clip.addEventListener('loadeddata', () => {
-          if (media.clip !== clip) return;
+          if (disposed || media.clip !== clip || gl.isContextLost()) return;
           media.width = clip.videoWidth || 1;
           media.height = clip.videoHeight || 1;
           media.ready = true;
@@ -842,7 +867,7 @@ const FluidGlass = ({
         image.crossOrigin = 'anonymous';
         image.decoding = 'async';
         image.onload = () => {
-          if (media.image !== image) return;
+          if (disposed || media.image !== image || gl.isContextLost()) return;
           media.width = image.naturalWidth || 1;
           media.height = image.naturalHeight || 1;
           gl.bindTexture(gl.TEXTURE_2D, mediaTexture);
@@ -969,7 +994,7 @@ const FluidGlass = ({
 
       if (s.shape !== requested) {
         requested = s.shape;
-        morph.pending = s.shape;
+        morph.pending = s.shape === morph.to ? null : s.shape;
       }
       if (morph.pending && morph.t >= 1) {
         const key = `${morph.to}>${morph.pending}`;
@@ -982,8 +1007,11 @@ const FluidGlass = ({
           morph.t = 0;
           spring.vstretch -= 2.5 * s.wobble;
           if (morph.to !== morph.from) s.onShapeChange?.(morph.to);
+        } else if (entry.failed) {
+          morph.pending = null;
+        } else {
+          busy = true;
         }
-        busy = true;
       }
       if (morph.t < 1) {
         morph.t = Math.min(1, morph.t + dt / (reduced ? 0.35 : 0.85));
@@ -1072,7 +1100,7 @@ const FluidGlass = ({
       const key = morph.t < 1 ? `${morph.from}>${morph.to}` : `${morph.to}>${morph.to}`;
       const entry = request(key);
       if (ready(entry)) current = entry;
-      else busy = true;
+      else if (!entry.failed) busy = true;
       if (current) {
         if (presence < 1) {
           presence = Math.min(1, presence + dt / 0.5);
@@ -1102,8 +1130,9 @@ const FluidGlass = ({
           gl.bindVertexArray(vao);
           bindContent(fallback.uniforms, s);
           gl.drawArrays(gl.TRIANGLES, 0, 3);
+        } else if (!fallback.failed && visible && pageVisible) {
+          raf = requestAnimationFrame(frame);
         }
-        if (visible && pageVisible) raf = requestAnimationFrame(frame);
         return;
       }
 
@@ -1221,11 +1250,12 @@ const FluidGlass = ({
     };
 
     const wake = () => {
-      if (raf || lost || !visible || !pageVisible) return;
+      if (disposed || raf || lost || !visible || !pageVisible) return;
       last = performance.now();
       raf = requestAnimationFrame(frame);
     };
     wakeRef.current = () => {
+      if (disposed) return;
       calm = false;
       loadMedia();
       resize();
@@ -1321,7 +1351,9 @@ const FluidGlass = ({
       cancelAnimationFrame(raf);
       raf = 0;
     };
-    const onRestored = () => setGeneration(value => value + 1);
+    const onRestored = () => {
+      if (!disposed) setGeneration(value => value + 1);
+    };
     canvas.addEventListener('webglcontextlost', onLost);
     canvas.addEventListener('webglcontextrestored', onRestored);
 
@@ -1357,6 +1389,7 @@ const FluidGlass = ({
     });
     if (document.fonts?.ready) {
       document.fonts.ready.then(() => {
+        if (disposed) return;
         textState.key = '';
         drawText();
         wake();
@@ -1370,8 +1403,11 @@ const FluidGlass = ({
     wake();
 
     return () => {
+      disposed = true;
+      media.image = null;
       cancelAnimationFrame(raf);
       wakeRef.current = null;
+      morphRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
       themeObserver.disconnect();
@@ -1408,7 +1444,20 @@ const FluidGlass = ({
       data-clickable={morphOnClick ? '' : undefined}
     >
       <canvas ref={canvasRef} className="fluid-glass__canvas" aria-hidden="true" />
-      <div ref={handleRef} className="fluid-glass__handle" aria-hidden="true" />
+      <div
+        ref={handleRef}
+        className="fluid-glass__handle"
+        role="button"
+        tabIndex={morphOnClick ? 0 : -1}
+        aria-label="Change glass shape"
+        aria-disabled={!morphOnClick}
+        onKeyDown={event => {
+          if (morphOnClick && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            morphRef.current?.();
+          }
+        }}
+      />
       {text ? <p className="fluid-glass__label">{text}</p> : null}
       {children ? <div className="fluid-glass__content">{children}</div> : null}
     </div>
