@@ -697,7 +697,7 @@ const Topography = ({
   glitch = 0,
   intro = true,
   lightMode = false,
-  dpr,
+  dpr = undefined,
   className = '',
   style
 }) => {
