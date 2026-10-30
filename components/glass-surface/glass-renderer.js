@@ -357,8 +357,10 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     drawn = '';
     wake();
   };
+  const onBackdropFailure = () => onFailure();
   if (backdropNode instanceof HTMLImageElement) {
     backdropNode.addEventListener('load', onBackdropReady);
+    backdropNode.addEventListener('error', onBackdropFailure);
   } else if (backdropNode instanceof HTMLVideoElement) {
     backdropNode.addEventListener('loadeddata', onBackdropReady);
     backdropNode.addEventListener('playing', wake);
@@ -393,6 +395,7 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
     window.removeEventListener('scroll', wake, true);
     if (backdropNode instanceof HTMLImageElement) {
       backdropNode.removeEventListener('load', onBackdropReady);
+      backdropNode.removeEventListener('error', onBackdropFailure);
     } else if (backdropNode instanceof HTMLVideoElement) {
       backdropNode.removeEventListener('loadeddata', onBackdropReady);
       backdropNode.removeEventListener('playing', wake);
