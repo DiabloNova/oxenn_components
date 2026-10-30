@@ -42,6 +42,7 @@
 .previewMeta { min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px 0 19px; border-bottom: 1px solid var(--line); color: #9da8c3; font-size: 10px; font-weight: 850; letter-spacing: .13em; }
 .previewStatus, .previewActions { display: flex; align-items: center; gap: 10px; }
 .liveDot { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: #6be3c0; box-shadow: 0 0 0 4px rgba(107, 227, 192, .11), 0 0 15px rgba(107, 227, 192, .55); }
+.unavailableDot { background: #8792aa; box-shadow: 0 0 0 4px rgba(135, 146, 170, .1); }
 .engineTag { padding: 4px 6px; border: 1px solid rgba(137, 232, 255, .2); border-radius: 5px; color: var(--accent); font-size: 10px; letter-spacing: .1em; }
 .interactionHint { display: inline-flex; align-items: center; gap: 6px; color: #8f9bb9; white-space: nowrap; }
 .iconButton { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid rgba(221, 235, 255, .15); border-radius: 10px; color: #e7efff; background: rgba(255, 255, 255, .055); cursor: pointer; transition: background 160ms ease, border-color 160ms ease, transform 160ms ease; }
