@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/sidebar/Sidebar";
-import { ArrowUpRight, CircleCheck, Command, Droplets, Layers3, Menu, MoveUpRight, Waves, X } from "lucide-react";
+import { ArrowUpRight, CircleCheck, Command, Droplets, Layers3, Menu, Mountain, MoveUpRight, Waves, X } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function HomePage() {
@@ -23,6 +23,7 @@ export default function HomePage() {
             <Link href="/components/gradient-waves" onClick={() => setMenuOpen(false)}><Waves size={16} /> Gradient Waves <ArrowUpRight size={14} /></Link>
             <Link href="/components/glass-surface" onClick={() => setMenuOpen(false)}><Droplets size={16} /> Glass Surface <ArrowUpRight size={14} /></Link>
             <Link href="/components/fluid-glass" onClick={() => setMenuOpen(false)}><Droplets size={16} /> Fluid Glass <ArrowUpRight size={14} /></Link>
+            <Link href="/components/topography" onClick={() => setMenuOpen(false)}><Mountain size={16} /> Topography <ArrowUpRight size={14} /></Link>
             <a href="https://github.com/DiabloNova/oxenn_components" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}><ArrowUpRight size={16} /> GitHub repository</a>
           </nav>}
         </header>
