@@ -168,5 +168,5 @@
   .glassMessage small { font-size: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .page, .ambient, .back, .source { transition: none !important; }
+  .page, .ambient, .back, .source, .page :global(.glass-surface) { transition: none !important; }
 }
