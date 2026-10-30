@@ -1266,7 +1266,7 @@ const Topography = ({
 
     let sizedDpr = settingsRef.current.dpr;
 
-    const resize = () => {
+    const resize = (scheduleFrame = true) => {
       const s = settingsRef.current;
       sizedDpr = s.dpr;
       view.width = Math.max(1, container.clientWidth);
@@ -1275,14 +1275,14 @@ const Topography = ({
       canvas.width = Math.max(1, Math.round(view.width * view.ratio));
       canvas.height = Math.max(1, Math.round(view.height * view.ratio));
       render();
-      wake();
+      if (scheduleFrame) wake();
     };
 
     const frame = now => {
       raf = 0;
       if (!visible || document.hidden) return;
       const s = settingsRef.current;
-      if (s.dpr !== sizedDpr) resize();
+      if (s.dpr !== sizedDpr) resize(false);
       const dt = last ? clamp((now - last) / 1000, 0, 1 / 20) : 1 / 60;
       last = now;
 
@@ -1498,7 +1498,6 @@ const Topography = ({
       [terrain, fieldProgram, sculptProgram, downProgram, blurProgram, compositeProgram, markerProgram].forEach(
         program => program && gl.deleteProgram(program.program)
       );
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [generation]);
 
