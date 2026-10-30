@@ -74,7 +74,7 @@ export default function GlassSurfacePage() {
             </div>
           </div>
 
-          <div className={styles.heroSpec} aria-label="Glass surface component specification">
+          <div className={styles.heroSpec} role="group" aria-label="Glass surface component specification">
             <div className={styles.specOrb} aria-hidden="true" />
             <GlassSurface
               width="100%"
