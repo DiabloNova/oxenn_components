@@ -24,6 +24,11 @@
   will-change: transform;
 }
 
+.fluid-glass__handle:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
 .fluid-glass[data-interaction='drag'] .fluid-glass__handle {
   pointer-events: auto;
   cursor: grab;
