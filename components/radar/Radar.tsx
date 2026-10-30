@@ -878,7 +878,7 @@ export default function Radar({
       const s = settingsRef.current;
       const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
       last = now;
-      const moving = !s.paused && !reduce;
+      const moving = !s.paused && !reduce && Math.abs(s.speed) > 0;
       if (!s.intro || reduce) state.intro = 1;
       else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);
       const plane = s.mouseInteraction && pointer.inside && !reduce ? toPlane(s, pointer.x, pointer.y) : null;
@@ -985,7 +985,6 @@ export default function Radar({
       gl.deleteBuffer(instanceBuffer);
       gl.deleteVertexArray(quadVao);
       gl.deleteVertexArray(spriteVao);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, []);
 
