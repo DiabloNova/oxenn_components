@@ -409,9 +409,6 @@ export function startGlassRenderer({ canvas, element, settingsRef, mapUrlRef, wa
       resizeObserver.observe(backdropNode);
       if (!element.contains(backdropNode)) {
         backdropObserver.observe(backdropNode, { attributes: true, attributeFilter: ['class', 'style'] });
-        if (backdropNode.parentElement) {
-          backdropObserver.observe(backdropNode.parentElement, { childList: true });
-        }
       }
     }
     return backdropNode;
