@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Publish only the reusable components/ subtree, never the showcase application.
-# Run this from a clean checkout of oxenn_components/main after component PRs merge.
+# Run this from a complete, clean checkout of oxenn_components/main.
 
 SOURCE_BRANCH="main"
 SOURCE_PREFIX="components"
@@ -23,15 +23,38 @@ CURRENT_BRANCH="$(git branch --show-current)"
 [[ -z "$(git status --porcelain)" ]] || fail "working tree is not clean; commit or discard local changes first."
 [[ -d "$SOURCE_PREFIX" ]] || fail "source directory '$SOURCE_PREFIX' does not exist."
 git remote get-url "$REMOTE" >/dev/null 2>&1 || fail "Git remote '$REMOTE' is not configured."
+
+# A shallow checkout cannot preserve the complete component history in subtree split.
+IS_SHALLOW="$(git rev-parse --is-shallow-repository 2>/dev/null)" || fail "could not determine whether this repository is shallow."
+[[ "$IS_SHALLOW" == "false" ]] || fail "shallow repositories are not supported; fetch the complete history before publishing."
+
 git fetch "$REMOTE" "$SOURCE_BRANCH" --quiet || fail "could not fetch $REMOTE/$SOURCE_BRANCH."
 LOCAL_HEAD="$(git rev-parse HEAD)"
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD)"
 [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]] || fail "local main must exactly match $REMOTE/$SOURCE_BRANCH; run git pull --ff-only and retry."
 
-# git subtree split produces a commit whose tree is the contents of components/.
-# A normal push is intentional: never overwrite a divergent distribution branch.
-SPLIT_SHA="$(git subtree split --prefix="$SOURCE_PREFIX" HEAD)" || fail "git subtree split failed; ensure git-subtree is installed."
+# Record the distribution ref so concurrent publishers cannot overwrite one another.
+DIST_REMOTE_LINE="$(git ls-remote "$REMOTE" "refs/heads/$DIST_BRANCH")" || fail "could not inspect $REMOTE/$DIST_BRANCH."
+DIST_REMOTE_HEAD="${DIST_REMOTE_LINE%%[[:space:]]*}"
+if [[ -z "$DIST_REMOTE_HEAD" ]]; then
+  DIST_LEASE="--force-with-lease=refs/heads/$DIST_BRANCH:"
+else
+  DIST_LEASE="--force-with-lease=refs/heads/$DIST_BRANCH:$DIST_REMOTE_HEAD"
+fi
+
+# Split the exact source commit that was verified above.
+SPLIT_SHA="$(git subtree split --prefix="$SOURCE_PREFIX" "$LOCAL_HEAD")" || fail "git subtree split failed; ensure git-subtree is installed."
 [[ -n "$SPLIT_SHA" ]] || fail "git subtree split returned an empty commit."
 
-git push "$REMOTE" "$SPLIT_SHA:refs/heads/$DIST_BRANCH"
-printf 'Published %s from %s@%s to %s/%s\n' "$SOURCE_PREFIX" "$SOURCE_BRANCH" "$SPLIT_SHA" "$REMOTE" "$DIST_BRANCH"
+# Re-read main immediately before pushing. The atomic push below also includes
+# main as a no-op refspec with a lease, closing the remaining TOCTOU window:
+# if main moves after this check, the server rejects the entire atomic push.
+LATEST_REMOTE_LINE="$(git ls-remote "$REMOTE" "refs/heads/$SOURCE_BRANCH")" || fail "could not revalidate $REMOTE/$SOURCE_BRANCH."
+LATEST_REMOTE_HEAD="${LATEST_REMOTE_LINE%%[[:space:]]*}"
+[[ "$LATEST_REMOTE_HEAD" == "$LOCAL_HEAD" ]] || fail "$REMOTE/$SOURCE_BRANCH changed during subtree generation; fetch, fast-forward main, and retry."
+
+git push --atomic "$DIST_LEASE" "--force-with-lease=refs/heads/$SOURCE_BRANCH:$LOCAL_HEAD" "$REMOTE" \
+  "$SPLIT_SHA:refs/heads/$DIST_BRANCH" \
+  "$LOCAL_HEAD:refs/heads/$SOURCE_BRANCH"
+
+printf 'Published %s from %s@%s to %s/%s\n' "$SOURCE_PREFIX" "$SOURCE_BRANCH" "$LOCAL_HEAD" "$REMOTE" "$DIST_BRANCH"
