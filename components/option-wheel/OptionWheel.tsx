@@ -70,7 +70,7 @@ export default function OptionWheel({
   const onChangeRef = useRef(onChange);
   const selectedRef = useRef(initialIndex);
   const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dragRef = useRef<{ y: number; start: number; id: number } | null>(null);
+  const dragRef = useRef<{ y: number; start: number; id: number; itemIndex: number | null } | null>(null);
   const dragMovedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef('');
@@ -218,7 +218,16 @@ export default function OptionWheel({
 
   const handlePointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
     if (!draggable || event.button !== 0) return;
-    dragRef.current = { y: event.clientY, start: targetRef.current, id: event.pointerId };
+    const optionTarget = event.target instanceof Element
+      ? event.target.closest<HTMLElement>('[data-option-index]')
+      : null;
+    const itemIndex = optionTarget ? Number(optionTarget.dataset.optionIndex) : null;
+    dragRef.current = {
+      y: event.clientY,
+      start: targetRef.current,
+      id: event.pointerId,
+      itemIndex: itemIndex !== null && Number.isInteger(itemIndex) ? itemIndex : null
+    };
     // Capture immediately so pointer-up is delivered even if the pointer leaves the wheel
     // before the drag threshold is crossed.
     rootRef.current?.setPointerCapture(event.pointerId);
@@ -241,9 +250,15 @@ export default function OptionWheel({
 
   const handlePointerEnd = useCallback((event: PointerEvent<HTMLDivElement>) => {
     if (!dragRef.current || dragRef.current.id !== event.pointerId) return;
+    const clickedItemIndex = dragRef.current.itemIndex;
     dragRef.current = null;
     setIsDragging(false);
-    if (dragMovedRef.current) applyTarget(targetRef.current, true);
+    if (dragMovedRef.current) {
+      applyTarget(targetRef.current, true);
+    } else if (clickedItemIndex !== null) {
+      handleItemClick(clickedItemIndex);
+    }
+    dragMovedRef.current = false;
   }, [applyTarget]);
 
   const handleItemClick = useCallback((index: number) => {
@@ -310,6 +325,7 @@ export default function OptionWheel({
           id={`${listId}-option-${index}`}
           ref={(element) => { itemRefs.current[index] = element; }}
           role="option"
+          data-option-index={index}
           aria-selected={selectedIndex === index}
           className={`option-wheel__item${selectedIndex === index ? ' option-wheel__item--selected' : ''}`}
           onClick={() => handleItemClick(index)}
