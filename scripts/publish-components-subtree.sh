@@ -23,6 +23,10 @@ CURRENT_BRANCH="$(git branch --show-current)"
 [[ -z "$(git status --porcelain)" ]] || fail "working tree is not clean; commit or discard local changes first."
 [[ -d "$SOURCE_PREFIX" ]] || fail "source directory '$SOURCE_PREFIX' does not exist."
 git remote get-url "$REMOTE" >/dev/null 2>&1 || fail "Git remote '$REMOTE' is not configured."
+git fetch "$REMOTE" "$SOURCE_BRANCH" --quiet || fail "could not fetch $REMOTE/$SOURCE_BRANCH."
+LOCAL_HEAD="$(git rev-parse HEAD)"
+REMOTE_HEAD="$(git rev-parse FETCH_HEAD)"
+[[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]] || fail "local main must exactly match $REMOTE/$SOURCE_BRANCH; run git pull --ff-only and retry."
 
 # git subtree split produces a commit whose tree is the contents of components/.
 # A normal push is intentional: never overwrite a divergent distribution branch.
