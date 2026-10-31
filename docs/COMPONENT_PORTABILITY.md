@@ -74,7 +74,7 @@ git pull --ff-only origin main
 bash scripts/publish-components-subtree.sh
 ```
 
-The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It requires the `git subtree` command to be installed, refuses to publish from a non-main branch or a dirty working tree, and does not force-push. A non-fast-forward rejection must be investigated rather than bypassed.
+The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It requires the `git subtree` command to be installed, refuses to publish from a non-main branch or a dirty working tree, fetches `origin/main` (or the configured remote's `main`) and requires the local commit to match it exactly, and does not force-push. A non-fast-forward rejection must be investigated rather than bypassed.
 
 The distribution branch is generated output. Do not edit it directly. Changes belong in normal component branches and are published only after those changes land on `main`.
 
