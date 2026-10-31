@@ -27,6 +27,13 @@ function addPage(componentsDir, slug, metadata) {
   }
 }
 
+function addRawMetadataPage(componentsDir, slug, metadata) {
+  const directory = path.join(componentsDir, slug);
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(path.join(directory, "page.tsx"), "export default function Page() { return null; }\n");
+  writeFileSync(path.join(directory, "component.json"), metadata);
+}
+
 test("discovers only direct component routes and applies metadata with stable ordering", () => {
   assert.equal(typeof discoverComponents, "function", "generator must export discoverComponents");
   withComponents((componentsDir) => {
@@ -54,12 +61,31 @@ test("uses readable defaults when component metadata is omitted", () => {
   });
 });
 
-test("rejects malformed or unsupported component metadata", () => {
+test("rejects invalid JSON component metadata", () => {
   assert.equal(typeof discoverComponents, "function", "generator must export discoverComponents");
   withComponents((componentsDir) => {
-    addPage(componentsDir, "invalid", { title: "Invalid", unexpected: true });
-    assert.throws(() => discoverComponents(componentsDir), /unsupported.*unexpected/i);
+    addRawMetadataPage(componentsDir, "invalid-json", '{"title": "Broken",');
+    assert.throws(() => discoverComponents(componentsDir), /Invalid JSON/);
   });
+});
+
+test("rejects unsupported metadata fields and invalid field types", () => {
+  assert.equal(typeof discoverComponents, "function", "generator must export discoverComponents");
+
+  const invalidCases = [
+    { slug: "unsupported-field", metadata: { title: "Invalid", unexpected: true }, message: /unsupported.*unexpected/i },
+    { slug: "invalid-title", metadata: { title: 42 }, message: /title.*non-empty string/i },
+    { slug: "invalid-icon", metadata: { icon: 42 }, message: /icon.*non-empty string/i },
+    { slug: "invalid-order", metadata: { order: "first" }, message: /order.*finite number/i },
+    { slug: "invalid-navigation", metadata: { navigation: "yes" }, message: /navigation.*boolean/i },
+  ];
+
+  for (const { slug, metadata, message } of invalidCases) {
+    withComponents((componentsDir) => {
+      addPage(componentsDir, slug, metadata);
+      assert.throws(() => discoverComponents(componentsDir), message, slug);
+    });
+  }
 });
 
 test("renders deterministic TypeScript output from the registry entries", () => {
