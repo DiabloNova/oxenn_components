@@ -31,6 +31,14 @@ export const componentRegistry = [
     "icon": "Mountain",
     "order": 40,
     "navigation": true
+  },
+  {
+    "slug": "fluid-glass",
+    "href": "/components/fluid-glass",
+    "title": "Fluid Glass",
+    "icon": "Droplets",
+    "order": 1000,
+    "navigation": true
   }
 ] as const;
 export type ComponentRegistryItem = (typeof componentRegistry)[number];

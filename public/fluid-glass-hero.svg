@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" fill="none">
+  <defs>
+    <linearGradient id="base" x1="85" y1="60" x2="1515" y2="860" gradientUnits="userSpaceOnUse"><stop stop-color="#101A3E"/><stop offset=".48" stop-color="#17143B"/><stop offset="1" stop-color="#071B31"/></linearGradient>
+    <radialGradient id="cyan" cx="0" cy="0" r="1" gradientTransform="matrix(620 390 -530 840 1100 350)" gradientUnits="userSpaceOnUse"><stop stop-color="#35C8E8" stop-opacity=".65"/><stop offset=".48" stop-color="#2878B8" stop-opacity=".24"/><stop offset="1" stop-color="#16446F" stop-opacity="0"/></radialGradient>
+    <radialGradient id="violet" cx="0" cy="0" r="1" gradientTransform="matrix(500 370 -460 620 410 480)" gradientUnits="userSpaceOnUse"><stop stop-color="#9A6CFF" stop-opacity=".54"/><stop offset=".55" stop-color="#6F4FC2" stop-opacity=".18"/><stop offset="1" stop-color="#6F4FC2" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ribbon" x1="225" y1="160" x2="1400" y2="765" gradientUnits="userSpaceOnUse"><stop stop-color="#C4A6FF" stop-opacity=".04"/><stop offset=".36" stop-color="#6BE8FF" stop-opacity=".3"/><stop offset=".72" stop-color="#8E7CFF" stop-opacity=".23"/><stop offset="1" stop-color="#F7D8FF" stop-opacity=".07"/></linearGradient>
+    <linearGradient id="edge" x1="230" y1="130" x2="1370" y2="760" gradientUnits="userSpaceOnUse"><stop stop-color="#E7D9FF" stop-opacity=".34"/><stop offset=".45" stop-color="#8BEAFF" stop-opacity=".34"/><stop offset="1" stop-color="#CBB9FF" stop-opacity=".13"/></linearGradient>
+    <filter id="blur60" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="blur24" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="24"/></filter>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" stroke="#D8E8FF" stroke-opacity=".055"/></pattern>
+    <linearGradient id="bottom" x1="800" y1="590" x2="800" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#07101F" stop-opacity="0"/><stop offset="1" stop-color="#050B18" stop-opacity=".7"/></linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#base)"/><rect width="1600" height="900" fill="url(#cyan)"/><rect width="1600" height="900" fill="url(#violet)"/>
+  <g filter="url(#blur60)" opacity=".8"><ellipse cx="1160" cy="235" rx="300" ry="165" fill="#34D7F1" fill-opacity=".45"/><ellipse cx="415" cy="600" rx="295" ry="210" fill="#9C65FF" fill-opacity=".42"/><ellipse cx="780" cy="765" rx="410" ry="90" fill="#2C81B8" fill-opacity=".28"/></g>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+  <g opacity=".8"><path d="M120 646C330 410 488 316 664 342C834 366 872 536 1058 540C1232 544 1350 404 1512 246" stroke="url(#ribbon)" stroke-width="150" stroke-linecap="round"/><path d="M120 646C330 410 488 316 664 342C834 366 872 536 1058 540C1232 544 1350 404 1512 246" stroke="url(#edge)" stroke-opacity=".65" stroke-width="1.5"/><path d="M90 732C335 476 510 402 671 438C846 477 898 631 1080 637C1244 642 1397 521 1548 355" stroke="#A9EFFF" stroke-opacity=".12" stroke-width="2"/><path d="M108 574C326 344 492 260 660 286C830 312 866 478 1048 483C1225 489 1340 348 1490 190" stroke="#D6C6FF" stroke-opacity=".12" stroke-width="2"/></g>
+  <g opacity=".56"><circle cx="1120" cy="265" r="205" stroke="#A8E9FF" stroke-opacity=".17"/><circle cx="1120" cy="265" r="254" stroke="#A8E9FF" stroke-opacity=".09"/><circle cx="410" cy="600" r="164" stroke="#D4B8FF" stroke-opacity=".18"/><circle cx="410" cy="600" r="216" stroke="#D4B8FF" stroke-opacity=".08"/></g>
+  <g filter="url(#blur24)" opacity=".68"><path d="M1010 110L1292 210L1208 425L926 325L1010 110Z" fill="#5AD9F0" fill-opacity=".23"/><path d="M250 472L502 365L615 580L363 687L250 472Z" fill="#A17CFF" fill-opacity=".23"/></g>
+  <g stroke="#E4F7FF" stroke-opacity=".25"><path d="M1280 118V168M1255 143H1305"/><path d="M330 196V238M309 217H351"/><path d="M1408 650V688M1389 669H1427"/></g>
+  <rect width="1600" height="900" fill="url(#bottom)"/>
+</svg>
