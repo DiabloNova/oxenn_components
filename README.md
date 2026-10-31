@@ -26,7 +26,7 @@ Optionally add `app/components/<slug>/component.json` to customize its navigatio
 }
 ```
 
-All fields are optional. Defaults are derived from the folder name, use the generic `Blocks` icon, sort after explicitly ordered entries (`1000`), and show the page in navigation. Set `navigation` to `false` to keep a route available without listing it in the home menu. Icons are resolved from the small allowlist in `app/page.tsx`; unknown names safely fall back to `Blocks`.
+All fields are optional. The title defaults to the folder name, the icon defaults to the generic `Blocks` icon, the order defaults to `1000`, and the page is shown in navigation. Lower order values sort first. Set `navigation` to `false` to keep a route available without listing it in the home menu. Icons are resolved from the small allowlist in `app/page.tsx`; unknown names safely fall back to `Blocks`.
 
 The generated file `generated/component-registry.ts` is committed so TypeScript and CI always have a stable input. Regenerate it after adding/removing a route or changing metadata:
 
