@@ -11,6 +11,33 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Automatic component navigation
+
+The home page navigation is generated from the App Router component showcases. To add a new item, create a route at `app/components/<slug>/page.tsx`; the registry generator discovers it automatically during `npm run dev` and `npm run build`. Component PRs do not need to edit `app/page.tsx` to add a menu link.
+
+Optionally add `app/components/<slug>/component.json` to customize its navigation entry:
+
+```json
+{
+  "title": "Radar",
+  "icon": "Radar",
+  "order": 50,
+  "navigation": true
+}
+```
+
+All fields are optional. The title defaults to a title-cased version of the folder name, with hyphens and underscores converted to spaces; the icon defaults to the generic `Blocks` icon, the order defaults to `1000`, and the page is shown in navigation. Lower order values sort first. Set `navigation` to `false` to keep a route available without listing it in the home menu. Icons are resolved from the small allowlist in `app/page.tsx`; unknown names safely fall back to `Blocks`.
+
+The generated file `generated/component-registry.ts` is committed so TypeScript and CI always have a stable input. Regenerate it after adding/removing a route or changing metadata:
+
+```bash
+npm run generate:registry
+npm run check:registry
+npm run test:registry
+```
+
+CI verifies that the committed registry matches the current route folders and metadata. Do not edit the generated file manually.
+
 ## Component showcase
 
 - **Home:** `/` — animated collapsible sidebar.
@@ -26,23 +53,12 @@ Open the hamburger menu on the home page to navigate to all component showcases.
 
 The component is adapted from the supplied React Bits GlassSurface JS/CSS source and lives in `components/glass-surface/`. It is checked into this repository directly so the existing App Router project does not need a separate shadcn configuration. The showcase demonstrates SVG/frosted rendering, WebGL2 image refraction over a local backdrop, and transparent-image shape mapping. The WebGL renderer cleans up partially allocated GPU resources and falls back when WebGL2 or texture access is unavailable.
 
-```tsx
+```jsx
 import GlassSurface from "@/components/glass-surface/GlassSurface";
 
-export default function GlassSurfaceExample() {
-  return (
-    <GlassSurface
-      width={496}
-      height={62}
-      borderRadius={57}
-      distortionScale={130}
-      displace={0.5}
-      backgroundOpacity={0.1}
-    >
-      <span>Your content</span>
-    </GlassSurface>
-  );
-}
+<GlassSurface width={496} height={62} borderRadius={57} distortionScale={130} displace={0.5} backgroundOpacity={0.1}>
+  <span>Your content</span>
+</GlassSurface>
 ```
 
 The `backdrop` prop accepts an image, video, canvas, or React ref to one of those elements. Video backdrops update during playback; for a canvas backdrop, increment `backdropVersion` whenever its pixels change so the WebGL texture is refreshed. The `shape` prop accepts a transparent image path and derives its refractive silhouette from the image alpha channel. This repository keeps the implementation local, so the shadcn registry install command is not required here.
@@ -135,6 +151,8 @@ export default function FluidGlassExample() {
 ## Quality checks
 
 ```bash
+npm run check:registry
+npm run test:registry
 npm run lint
 npm run typecheck
 npm run build
