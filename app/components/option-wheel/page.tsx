@@ -70,7 +70,7 @@ export default function OptionWheelPage() {
       <section className={styles.details}>
         <div><span>01 / INPUT</span><p>Mouse wheel, trackpad, touch drag, and keyboard navigation.</p></div>
         <div><span>02 / MOTION</span><p>Frame-rate independent easing with a configurable curved layout.</p></div>
-        <div><span>03 / FEEDBACK</span><p>Selection callbacks, keyboard support, and accessible listbox semantics.</p></div>
+        <div><span>03 / FEEDBACK</span><p>Selection callbacks, optional audio ticks, and accessible listbox semantics.</p></div>
       </section>
       <footer className={styles.bottomNote}><span>OPTION WHEEL / 007</span><span>REACT · TYPESCRIPT · CSS</span></footer>
     </main>
