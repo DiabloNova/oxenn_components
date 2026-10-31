@@ -74,7 +74,7 @@ git pull --ff-only origin main
 bash scripts/publish-components-subtree.sh
 ```
 
-The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It requires the `git subtree` command to be installed, refuses to publish from a non-main branch or a dirty working tree, fetches `origin/main` (or the configured remote's `main`) and requires the local commit to match it exactly, and does not force-push. A non-fast-forward rejection must be investigated rather than bypassed.
+The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It requires the `git subtree` command to be installed, refuses to publish from a non-main branch or a dirty working tree, fetches `origin/main` (or the configured remote's `main`) and requires the local commit to match it exactly. The distribution branch is updated with a normal fast-forward-only push, not a force-push: the existing remote tip must be an ancestor of the generated subtree commit (or already equal to it). If the branch contains a manual edit, a bad publication, or any other divergent history, the push is rejected instead of overwriting that history; inspect and deliberately reconcile the branch rather than bypassing the rejection. For the same atomic push, the script also sends the unchanged source `main` commit as a no-op refspec guarded by `--force-with-lease`. That lease is only a concurrency check to ensure remote `main` has not moved since validation; it does not rewrite `main`.
 
 The distribution branch is generated output. Do not edit it directly. Changes belong in normal component branches and are published only after those changes land on `main`.
 
