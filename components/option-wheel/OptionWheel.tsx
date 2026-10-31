@@ -256,7 +256,16 @@ export default function OptionWheel({
     if (dragMovedRef.current) {
       applyTarget(targetRef.current, true);
     } else if (clickedItemIndex !== null) {
-      handleItemClick(clickedItemIndex);
+      const cfg = cfgRef.current as { count: number; loop: boolean };
+      if (cfg.count > 0) {
+        const current = targetRef.current;
+        let delta = clickedItemIndex - (((current % cfg.count) + cfg.count) % cfg.count);
+        if (cfg.loop && cfg.count > 1) {
+          if (delta > cfg.count / 2) delta -= cfg.count;
+          else if (delta < -cfg.count / 2) delta += cfg.count;
+        }
+        applyTarget(current + delta, true);
+      }
     }
     dragMovedRef.current = false;
   }, [applyTarget]);
