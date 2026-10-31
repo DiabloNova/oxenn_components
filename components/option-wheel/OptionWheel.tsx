@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent, type WheelEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent, type KeyboardEvent } from 'react';
 import './OptionWheel.css';
 
 const DEFAULT_ITEMS = [
@@ -255,7 +255,7 @@ export default function OptionWheel({
     applyTarget(current + delta, true);
   }, [applyTarget]);
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
     let delta: number | null = null;
     if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') delta = -1;
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') delta = 1;
