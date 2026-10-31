@@ -31,6 +31,14 @@ export const componentRegistry = [
     "icon": "Mountain",
     "order": 40,
     "navigation": true
+  },
+  {
+    "slug": "radar",
+    "href": "/components/radar",
+    "title": "Radar",
+    "icon": "Radar",
+    "order": 1000,
+    "navigation": true
   }
 ] as const;
 export type ComponentRegistryItem = (typeof componentRegistry)[number];
