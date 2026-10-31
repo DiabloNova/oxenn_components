@@ -80,7 +80,7 @@ The distribution branch is generated output. Do not edit it directly. Changes be
 
 ## 4. First import into Oxenn
 
-Run these commands from the Oxenn repository after the source distribution branch has been published. The destination prefix `src/components/oxenn-library` must not already exist (or must be empty); do not use this command to overwrite an existing component directory:
+Run these commands from the Oxenn repository after the source distribution branch has been published. The destination prefix `src/components/oxenn-library` must not exist at all. `git subtree add` fails if the prefix exists, even when it is an empty directory. If the directory exists, remove it only after verifying that it contains no user work; do not use this command to overwrite an existing component directory:
 
 ```bash
 git remote add oxenn-components https://github.com/DiabloNova/oxenn_components.git
@@ -135,7 +135,7 @@ Every component intended for reuse in Oxenn must satisfy these rules before it i
 ### Styling
 
 - Prefer CSS Modules for component styles. They reduce global selector collisions and keep the component self-contained.
-- If regular CSS is required, prefix every selector with a component-specific root class and import the stylesheet from the component entry. Do not add generic selectors such as `button`, `body`, `h1`, or `:root` to component styles.
+- Use CSS Modules (`*.module.css`) for component-owned styles and import them from the component entry. Do not import regular/global CSS from files under `components/`; Next.js App Router does not treat this reusable-source directory as a global stylesheet entry point. If a component truly requires global CSS, keep that stylesheet outside the subtree and import it from an appropriate file under the consumer's `src/app/` directory, documenting the required import. Scope any such global selectors to a component-specific root and never add generic selectors such as `button`, `body`, `h1`, or `:root`.
 - Do not silently depend on product-wide design tokens, fonts, global resets, or theme variables. Either define safe component defaults or document the required token contract explicitly.
 - Support reduced-motion preferences for non-essential animation and check focus-visible behavior for interactive components.
 - Do not assume Tailwind classes are available in the source project or in the consumer. Tailwind may be used only when the component contract explicitly declares it as a consumer requirement.
@@ -157,7 +157,7 @@ These examples illustrate why the contract is necessary; they are not blanket ap
 | FloatingBottomNav | React client component, `lucide-react`, local CSS Module | Good isolation pattern. Verify icon exports against Oxenn's installed Lucide version. |
 | Sidebar | React client component, `lucide-react`, local CSS Module | Good styling boundary. Product-specific navigation/data must continue to be injected through props. |
 | FluidGlass | React client component, local regular CSS, WebGL2 and browser observers | Requires a client boundary and browser-capability/fallback testing. Keep its CSS selectors namespaced. |
-| OptionWheel (currently on its separate feature branch/PR) | React client component, React hooks, relative regular CSS, pointer/wheel/keyboard handlers, optional audio URL | No Next.js or repository alias import was found in the entry file. Its CSS uses an `option-wheel` namespace. It still needs a build/render test inside the actual Oxenn app before product use. |
+| OptionWheel | React client component, React hooks, relative regular CSS, pointer/wheel/keyboard handlers, optional audio URL | Merged into `main`. Its current regular CSS import must be converted to a CSS Module (or moved to a documented `src/app/` global stylesheet import) before subtree integration. It still needs a build/render test inside the actual Oxenn app before product use. |
 
 ## 8. Consumer-side acceptance checklist
 
@@ -176,4 +176,4 @@ A component is **portable** only when source-boundary checks pass. It is **Oxenn
 
 ## 9. Scope and safety
 
-This contract does not change Oxenn, its dependencies, product routes, or navigation. It does not merge or retarget any existing component PR. The first import into Oxenn should be a separate, explicitly reviewed Oxenn change after the selected component's source PR has merged and the subtree distribution branch is published.
+This contract does not change Oxenn, its dependencies, product routes, or navigation. Each component must meet the CSS Module/global stylesheet rule above before it is imported. The first import into Oxenn should be a separate, explicitly reviewed Oxenn change after the selected component's source PR has merged and the subtree distribution branch is published.
