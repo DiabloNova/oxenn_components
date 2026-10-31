@@ -33,6 +33,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "option-wheel",
+    "href": "/components/option-wheel",
+    "title": "Option Wheel",
+    "icon": "Disc3",
+    "order": 60,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",
