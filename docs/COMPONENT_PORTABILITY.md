@@ -74,13 +74,13 @@ git pull --ff-only origin main
 bash scripts/publish-components-subtree.sh
 ```
 
-The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It refuses to publish from a non-main branch or a dirty working tree. It does not force-push; a non-fast-forward rejection must be investigated rather than bypassed.
+The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It requires the `git subtree` command to be installed, refuses to publish from a non-main branch or a dirty working tree, and does not force-push. A non-fast-forward rejection must be investigated rather than bypassed.
 
 The distribution branch is generated output. Do not edit it directly. Changes belong in normal component branches and are published only after those changes land on `main`.
 
 ## 4. First import into Oxenn
 
-Run these commands from the Oxenn repository after the source distribution branch has been published:
+Run these commands from the Oxenn repository after the source distribution branch has been published. The destination prefix `src/components/oxenn-library` must not already exist (or must be empty); do not use this command to overwrite an existing component directory:
 
 ```bash
 git remote add oxenn-components https://github.com/DiabloNova/oxenn_components.git
