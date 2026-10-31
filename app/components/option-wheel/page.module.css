@@ -1,0 +1,61 @@
+.page {
+  --page-bg: #101016;
+  --page-fg: #f2f0f5;
+  --muted: #92909f;
+  --soft: #c8c4d1;
+  --accent: #c4a6ff;
+  --border: rgba(210, 190, 255, .14);
+  --panel: rgba(255, 255, 255, .035);
+  min-height: 100svh;
+  position: relative;
+  overflow: hidden;
+  padding: 0 clamp(18px, 5.5vw, 82px) 72px;
+  color: var(--page-fg);
+  background: radial-gradient(ellipse at 50% 47%, rgba(112, 78, 158, .18), transparent 52%), linear-gradient(180deg, #101016, #17131e 76%, #100f15);
+}
+.page::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .2; background-image: linear-gradient(rgba(205, 180, 255, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(205, 180, 255, .06) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(180deg, black, transparent 80%); }
+.header { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 78px; border-bottom: 1px solid var(--border); }
+.back, .mark, .source { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.back { color: var(--soft); font-size: 12px; font-weight: 600; transition: color 180ms ease, transform 180ms ease; }
+.back:hover { color: var(--page-fg); transform: translateX(-2px); }
+.mark { color: var(--accent); font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+.source { color: var(--accent); font-size: 11px; font-weight: 600; }
+.source:hover { color: var(--page-fg); }
+.intro { position: relative; z-index: 1; padding: clamp(54px, 9vh, 100px) 0 45px; max-width: 760px; }
+.kicker { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .17em; }
+.intro h1 { margin: 19px 0 20px; font-size: clamp(58px, 9vw, 112px); font-weight: 620; line-height: .88; letter-spacing: -.09em; }
+.intro h1 em { color: var(--accent); font-family: Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: -.07em; }
+.intro p { max-width: 530px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.9; }
+.showcase { position: relative; z-index: 1; overflow: hidden; border: 1px solid var(--border); border-radius: 28px; background: var(--panel); box-shadow: 0 28px 90px rgba(0, 0, 0, .26), inset 0 1px rgba(255, 255, 255, .06); }
+.showcaseTop { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 22px 26px; border-bottom: 1px solid var(--border); }
+.eyebrow { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .16em; }
+.showcaseTop h2 { margin: 7px 0 0; font-size: 24px; font-weight: 550; letter-spacing: -.04em; }
+.counter { color: var(--accent); font-size: 12px; font-variant-numeric: tabular-nums; letter-spacing: .12em; }
+.counter i { margin: 0 5px; color: var(--muted); font-style: normal; }
+.wheelStage { position: relative; height: clamp(390px, 48vw, 530px); overflow: hidden; background: radial-gradient(ellipse at 50% 52%, rgba(135, 97, 186, .13), transparent 54%); }
+.wheelStage > :global(.option-wheel) { position: absolute; inset: 0; }
+.orbit { position: absolute; top: 50%; left: 50%; width: min(60vw, 500px); aspect-ratio: 1; border: 1px solid rgba(205, 180, 255, .08); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 38px rgba(205, 180, 255, .018), 0 0 0 76px rgba(205, 180, 255, .012); }
+.stageGlow { position: absolute; top: 50%; left: 50%; width: 180px; height: 180px; border-radius: 50%; background: rgba(159, 117, 219, .12); filter: blur(65px); transform: translate(-50%, -50%); pointer-events: none; }
+.stageHint { position: absolute; right: 22px; bottom: 18px; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .14em; pointer-events: none; }
+.toolbar { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 9px; padding: 16px; border-top: 1px solid var(--border); }
+.toolButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 13px; border: 1px solid var(--border); border-radius: 12px; color: var(--soft); background: rgba(255, 255, 255, .04); font-size: 10px; font-weight: 650; cursor: pointer; transition: border-color 180ms ease, background 180ms ease, color 180ms ease; }
+.toolButton:hover, .toolButton.active { border-color: color-mix(in srgb, var(--accent) 65%, transparent); color: var(--page-fg); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.toolButton:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 3px; }
+.details { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; padding: 30px 2px 12px; }
+.details > div { padding-top: 15px; border-top: 1px solid var(--border); }
+.details span, .bottomNote { color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .13em; }
+.details p { margin: 9px 0 0; color: var(--soft); font-size: 11px; line-height: 1.7; }
+.bottomNote { position: relative; z-index: 1; display: flex; justify-content: space-between; padding: 24px 2px; }
+@media (max-width: 760px) {
+  .page { padding-right: 16px; padding-left: 16px; }
+  .header { min-height: 68px; }
+  .mark { display: none; }
+  .intro { padding-top: 56px; }
+  .showcaseTop { padding: 18px; }
+  .wheelStage { height: 390px; }
+  .orbit { width: 75vw; }
+  .stageHint { right: 12px; bottom: 12px; font-size: 7px; }
+  .details { grid-template-columns: 1fr; gap: 14px; }
+  .bottomNote { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .back, .toolButton { transition: none; } }
