@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowUpRight, Disc3, RotateCcw, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Disc3, RotateCcw } from 'lucide-react';
 import OptionWheel from '@/components/option-wheel/OptionWheel';
 import styles from './page.module.css';
 
@@ -12,7 +12,6 @@ export default function OptionWheelPage() {
   const [selected, setSelected] = useState(2);
   const [side, setSide] = useState<'left' | 'right'>('left');
   const [loop, setLoop] = useState(false);
-  const [sound, setSound] = useState(false);
 
   return (
     <main className={styles.page}>
@@ -46,8 +45,6 @@ export default function OptionWheelPage() {
             defaultSelected={2}
             side={side}
             loop={loop}
-            soundUrl={sound ? '/assets/sounds/click-soft.mp3' : ''}
-            soundVolume={0.35}
             fontSize={2.65}
             spacing={1.45}
             curve={1.1}
@@ -55,7 +52,7 @@ export default function OptionWheelPage() {
             blur={1.35}
             fade={0.29}
             minOpacity={0.04}
-            inset={side === 'left' ? 48 : 48}
+            inset={48}
             onChange={(index) => setSelected(index)}
           />
           <span className={styles.stageHint}>SCROLL OR DRAG TO EXPLORE</span>
@@ -66,9 +63,6 @@ export default function OptionWheelPage() {
           </button>
           <button type="button" className={`${styles.toolButton}${loop ? ` ${styles.active}` : ''}`} aria-pressed={loop} onClick={() => setLoop((current) => !current)}>
             Loop {loop ? 'on' : 'off'}
-          </button>
-          <button type="button" className={`${styles.toolButton}${sound ? ` ${styles.active}` : ''}`} aria-pressed={sound} onClick={() => setSound((current) => !current)}>
-            <Volume2 size={14} /> Sound {sound ? 'on' : 'off'}
           </button>
         </div>
       </section>
