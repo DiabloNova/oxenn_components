@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import './OptionWheel.css';
 
 const DEFAULT_ITEMS = [
