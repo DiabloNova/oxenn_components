@@ -11,6 +11,33 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Automatic component navigation
+
+The home page navigation is generated from the App Router component showcases. To add a new item, create a route at `app/components/<slug>/page.tsx`; the registry generator discovers it automatically during `npm run dev` and `npm run build`. Component PRs do not need to edit `app/page.tsx` to add a menu link.
+
+Optionally add `app/components/<slug>/component.json` to customize its navigation entry:
+
+```json
+{
+  "title": "Radar",
+  "icon": "Radar",
+  "order": 50,
+  "navigation": true
+}
+```
+
+All fields are optional. The title defaults to a title-cased version of the folder name, with hyphens and underscores converted to spaces; the icon defaults to the generic `Blocks` icon, the order defaults to `1000`, and the page is shown in navigation. Lower order values sort first. Set `navigation` to `false` to keep a route available without listing it in the home menu. Icons are resolved from the small allowlist in `app/page.tsx`; unknown names safely fall back to `Blocks`.
+
+The generated file `generated/component-registry.ts` is committed so TypeScript and CI always have a stable input. Regenerate it after adding/removing a route or changing metadata:
+
+```bash
+npm run generate:registry
+npm run check:registry
+npm run test:registry
+```
+
+CI verifies that the committed registry matches the current route folders and metadata. Do not edit the generated file manually.
+
 ## Component showcase
 
 - **Home:** `/` — animated collapsible sidebar.
@@ -86,6 +113,8 @@ export default function DashboardLayout() {
 ## Quality checks
 
 ```bash
+npm run check:registry
+npm run test:registry
 npm run lint
 npm run typecheck
 npm run build
