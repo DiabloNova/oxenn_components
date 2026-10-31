@@ -33,15 +33,6 @@ LOCAL_HEAD="$(git rev-parse HEAD)"
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD)"
 [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]] || fail "local main must exactly match $REMOTE/$SOURCE_BRANCH; run git pull --ff-only and retry."
 
-# Record the distribution ref so concurrent publishers cannot overwrite one another.
-DIST_REMOTE_LINE="$(git ls-remote "$REMOTE" "refs/heads/$DIST_BRANCH")" || fail "could not inspect $REMOTE/$DIST_BRANCH."
-DIST_REMOTE_HEAD="${DIST_REMOTE_LINE%%[[:space:]]*}"
-if [[ -z "$DIST_REMOTE_HEAD" ]]; then
-  DIST_LEASE="--force-with-lease=refs/heads/$DIST_BRANCH:"
-else
-  DIST_LEASE="--force-with-lease=refs/heads/$DIST_BRANCH:$DIST_REMOTE_HEAD"
-fi
-
 # Split the exact source commit that was verified above.
 SPLIT_SHA="$(git subtree split --prefix="$SOURCE_PREFIX" "$LOCAL_HEAD")" || fail "git subtree split failed; ensure git-subtree is installed."
 [[ -n "$SPLIT_SHA" ]] || fail "git subtree split returned an empty commit."
@@ -53,7 +44,12 @@ LATEST_REMOTE_LINE="$(git ls-remote "$REMOTE" "refs/heads/$SOURCE_BRANCH")" || f
 LATEST_REMOTE_HEAD="${LATEST_REMOTE_LINE%%[[:space:]]*}"
 [[ "$LATEST_REMOTE_HEAD" == "$LOCAL_HEAD" ]] || fail "$REMOTE/$SOURCE_BRANCH changed during subtree generation; fetch, fast-forward main, and retry."
 
-git push --atomic "$DIST_LEASE" "--force-with-lease=refs/heads/$SOURCE_BRANCH:$LOCAL_HEAD" "$REMOTE" \
+# Update the distribution branch with a normal push, never a force update.
+# Git accepts this only when the remote distribution tip is an ancestor of
+# SPLIT_SHA (or already equals it). A divergent/manual edit or bad publication
+# is rejected rather than silently discarded. The atomic source-main no-op
+# refspec uses a lease only to ensure main has not moved since validation.
+git push --atomic "--force-with-lease=refs/heads/$SOURCE_BRANCH:$LOCAL_HEAD" "$REMOTE" \
   "$SPLIT_SHA:refs/heads/$DIST_BRANCH" \
   "$LOCAL_HEAD:refs/heads/$SOURCE_BRANCH"
 
