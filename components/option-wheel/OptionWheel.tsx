@@ -57,7 +57,9 @@ export default function OptionWheel({
   soundVolume = 0.5,
   className = ''
 }: OptionWheelProps) {
-  const initialIndex = items.length > 0 ? clamp(Math.round(defaultSelected), 0, items.length - 1) : 0;
+  const initialIndex = items.length > 0 && Number.isFinite(defaultSelected)
+    ? clamp(Math.round(defaultSelected), 0, items.length - 1)
+    : 0;
   const rootRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const posRef = useRef(initialIndex);
@@ -217,6 +219,9 @@ export default function OptionWheel({
   const handlePointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
     if (!draggable || event.button !== 0) return;
     dragRef.current = { y: event.clientY, start: targetRef.current, id: event.pointerId };
+    // Capture immediately so pointer-up is delivered even if the pointer leaves the wheel
+    // before the drag threshold is crossed.
+    rootRef.current?.setPointerCapture(event.pointerId);
     dragMovedRef.current = false;
     setIsDragging(true);
   }, [draggable]);
@@ -227,7 +232,6 @@ export default function OptionWheel({
     const deltaY = event.clientY - drag.y;
     if (!dragMovedRef.current && Math.abs(deltaY) > 4) {
       dragMovedRef.current = true;
-      rootRef.current?.setPointerCapture(drag.id);
     }
     if (dragMovedRef.current) {
       const cfg = cfgRef.current as { rowH: number };
