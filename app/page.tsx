@@ -33,6 +33,13 @@ const navigationIcons = {
 
 type NavigationIconName = keyof typeof navigationIcons;
 
+function getNavigationIcon(iconName: string) {
+  if (Object.prototype.hasOwnProperty.call(navigationIcons, iconName)) {
+    return navigationIcons[iconName as NavigationIconName];
+  }
+  return Blocks;
+}
+
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
@@ -47,7 +54,7 @@ export default function HomePage() {
           {menuOpen && <nav className={styles.menuPanel} id="site-navigation" aria-label="Site navigation">
             <Link href="/" onClick={() => setMenuOpen(false)}><Command size={16} /> Component lab home</Link>
             {componentRegistry.filter((item) => item.navigation).map((item) => {
-              const Icon = navigationIcons[item.icon as NavigationIconName] ?? Blocks;
+              const Icon = getNavigationIcon(item.icon);
               return (
                 <Link key={item.slug} href={item.href} onClick={() => setMenuOpen(false)}>
                   <Icon size={16} /> {item.title} <ArrowUpRight size={14} />
