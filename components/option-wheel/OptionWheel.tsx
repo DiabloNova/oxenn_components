@@ -197,7 +197,7 @@ export default function OptionWheel({
   useEffect(() => {
     const element = rootRef.current;
     if (!element) return;
-    const onWheel = (event: globalThis.WheelEvent) => {
+    const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       const cfg = cfgRef.current as { rowH: number };
       const delta = event.deltaMode === 1 ? event.deltaY * 24 : event.deltaY;
