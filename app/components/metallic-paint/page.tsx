@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpRight, RotateCcw, Sparkles, Waves } from "lucide-react";
@@ -81,7 +82,7 @@ export default function MetallicPaintPage() {
                 lightMode={lightMode}
               />
             ) : webglAvailable === false ? (
-              <img className={styles.staticLogo} src="/metallic-paint-logo.svg" alt="" aria-hidden="true" />
+              <Image className={styles.staticLogo} src="/metallic-paint-logo.svg" alt="" aria-hidden="true" width={512} height={512} />
             ) : (
               <span className={styles.previewStatus} aria-hidden="true">
                 Checking WebGL2 support…
