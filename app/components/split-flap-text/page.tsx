@@ -45,6 +45,8 @@ export default function SplitFlapTextPage() {
           <span className={styles.displayLabel}>SYSTEM MESSAGE <i /> TRANSMITTING</span>
           <div className={styles.displayCenter}>
             <SplitFlapText
+              aria-live="polite"
+              aria-atomic="true"
               words={PHRASES}
               flipDuration={0.12}
               stagger={0.06}
@@ -71,10 +73,10 @@ export default function SplitFlapTextPage() {
 
         <div className={styles.toolbar}>
           <button type="button" className={styles.toolButton} onClick={() => setMinimal((value) => !value)} aria-pressed={minimal}>
-            {minimal ? 'Board tiles' : 'Minimal tiles'}
+            Minimal tiles
           </button>
           <button type="button" className={styles.toolButton + (loop ? ' ' + styles.active : '')} onClick={() => setLoop((value) => !value)} aria-pressed={loop}>
-            Loop {loop ? 'on' : 'off'}
+            Loop
           </button>
         </div>
       </section>
