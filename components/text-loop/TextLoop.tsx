@@ -363,7 +363,7 @@ export default function TextLoop({
       root.addEventListener('pointerleave', onLeave);
       const pointerIsInside = hoveredRef.current || root.matches(':hover');
       hoveredRef.current = pointerIsInside;
-      if (pointerIsInside) glide(true);
+      glide(pointerIsInside);
     } else {
       hoveredRef.current = false;
       hover.scale = 1;
