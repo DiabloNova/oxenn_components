@@ -148,6 +148,16 @@ export default function FluidGlassExample() {
 }
 ```
 
+## Reusing components in Oxenn
+
+The component source is maintained independently from its showcase routes. See [Component Portability and Oxenn Integration](docs/COMPONENT_PORTABILITY.md) for the verified compatibility matrix, source contract, and Git Subtree workflow. After component changes are merged into `main`, publish the `components/` subtree with:
+
+```bash
+bash scripts/publish-components-subtree.sh
+```
+
+The script publishes only the reusable component source to `oxenn-components-dist`; it does not publish demo pages or change the Oxenn repository. Consumer-side validation is required before a component is used in the product.
+
 ## Quality checks
 
 ```bash
