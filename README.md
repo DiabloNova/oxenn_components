@@ -48,6 +48,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
 - **Branched Menu:** `/components/branched-menu` — animated tree navigation with expandable sections, SVG connector paths, and selection callbacks.
 - **Option Wheel:** `/components/option-wheel` — curved kinetic selector with pointer, wheel, and keyboard interaction.
+- **Text Loop:** `/components/text-loop` — animated SVG text paths with configurable shapes, ribbons, drag momentum, hover pause, and scroll boost.
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
 
 Open the hamburger menu on the home page to navigate to all component showcases.
@@ -150,6 +151,7 @@ import GradientBlinds from "@/components/gradient-blinds/GradientBlinds";
 </div>
 ```
 
+
 ## Topography
 
 The component source is taken from the official [React Bits Topography JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/Topography-JS-CSS.json). To install it in a compatible shadcn setup:
@@ -159,6 +161,37 @@ pnpm dlx shadcn@latest add @react-bits/Topography-JS-CSS
 ```
 
 The component is checked into `components/topography/` and uses WebGL2 for animated terrain rendering. It supports reduced-motion preferences and pointer/click interactions.
+
+## Text Loop
+
+The checked-in component is an adaptation of the supplied React Bits TextLoop JS/CSS implementation. The shadcn command below installs the upstream registry item, not this repository's adapted version; use `components/text-loop/` when reusing the implementation maintained here.
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/TextLoop-JS-CSS
+```
+
+The component is checked into `components/text-loop/` and showcased at `/components/text-loop`. It imports GSAP at runtime, so every consuming app must install a compatible version explicitly (for example, `pnpm add gsap@^3.13.0`). The GSAP dependency in this repository's `package.json` supports the local showcase and is not transferred automatically with the component subtree. `ribbonColor` and `crossColor` accept CSS color values (including hex, named, `rgb()`, and `hsl()` colors); the crossing ribbon uses `color-mix()` to lighten its stroke for a contrasting dark text overlay. The component stylesheet is a local CSS Module for safe subtree reuse.
+
+```tsx
+import TextLoop from "@/components/text-loop/TextLoop";
+
+<TextLoop
+  text=" OXENN ✦ AI ✦ SEO ✦ AEO ✦ GEO "
+  shape="line"
+  speed={90}
+  direction="forward"
+  separator="✦"
+  curviness={126}
+  fontSize={46}
+  fontWeight={800}
+  ribbon
+  ribbonColor="#5227FF"
+  ribbonWidth={86}
+  draggable
+  pauseOnHover
+/>
+```
+
 
 ## Floating bottom navigation
 
