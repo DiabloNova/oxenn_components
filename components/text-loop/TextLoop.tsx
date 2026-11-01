@@ -21,7 +21,6 @@ const MAX_FLING = 2600;
 
 type Shape = 'line' | 'wave' | 'arch' | 'circle' | 'infinity';
 type Direction = 'forward' | 'reverse';
-type HexColor = `#${string}`;
 
 export interface TextLoopProps {
   text?: string;
@@ -38,14 +37,12 @@ export interface TextLoopProps {
   uppercase?: boolean;
   color?: string;
   ribbon?: boolean;
-  /** A 3- or 6-digit hexadecimal color (#RGB or #RRGGBB). */
-  ribbonColor?: HexColor;
+  ribbonColor?: string;
   ribbonWidth?: number;
   edgeFade?: number;
   pauseOnHover?: boolean;
   cross?: boolean;
-  /** A 3- or 6-digit hexadecimal color (#RGB or #RRGGBB). */
-  crossColor?: HexColor;
+  crossColor?: string;
   crossAngle?: number;
   draggable?: boolean;
   scrollBoost?: number;
@@ -101,29 +98,6 @@ function buildPath(shape: Shape, curviness: number, ribbonWidth: number, mirrore
       return `M -320 ${CY} Q -160 ${CY - amplitude} 0 ${CY} T 320 ${CY} T 640 ${CY} T 960 ${CY} T 1280 ${CY} T ${VIEW_W + 320} ${CY}`;
     }
   }
-}
-
-function parseHex(value: string) {
-  const match = /^#?([\da-f]{3}|[\da-f]{6})$/i.exec(value.trim());
-  if (!match) return null;
-  const hex = match[1].length === 3 ? match[1].replace(/./g, (char) => char + char) : match[1];
-  return [0, 2, 4].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
-}
-
-function tint(color: string, amount: number) {
-  const rgb = parseHex(color);
-  if (!rgb) return color;
-  return `#${rgb.map((channel) => Math.round(channel + (255 - channel) * amount).toString(16).padStart(2, '0')).join('')}`;
-}
-
-function inkOn(color: string) {
-  const rgb = parseHex(color);
-  if (!rgb) return '#ffffff';
-  const [r, g, b] = rgb.map((channel) => {
-    const value = channel / 255;
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.2 ? '#120f17' : '#ffffff';
 }
 
 export default function TextLoop({
@@ -192,9 +166,10 @@ export default function TextLoop({
   const secondaryAngle = tilt - (cross ? crossAngle / 2 : 0);
   const mainTransform = mainAngle ? `rotate(${mainAngle} ${CX} ${CY})` : undefined;
   const secondaryTransform = secondaryAngle ? `rotate(${secondaryAngle} ${CX} ${CY})` : undefined;
-  const crossTape = crossColor || tint(ribbonColor, 0.62);
+  // Mix the source color toward white so the dark overprint remains legible for any valid CSS color.
+  const crossTape = `color-mix(in srgb, ${crossColor || ribbonColor} 38%, white)`;
   const fill = color || (ribbon ? '#ffffff' : 'currentColor');
-  const secondaryFill = ribbon ? inkOn(crossTape) : crossColor || 'currentColor';
+  const secondaryFill = ribbon ? '#120f17' : crossColor || 'currentColor';
   const fadeWidth = clamp(edgeFade, 0, 1) * 0.3;
   const fadeStops = useMemo(
     () => Array.from({ length: 9 }, (_, index) => index / 8),
