@@ -45,9 +45,60 @@ CI verifies that the committed registry matches the current route folders and me
 - **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
 - **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
+- **Branched Menu:** `/components/branched-menu` — animated tree navigation with expandable sections, SVG connector paths, and selection callbacks.
+- **Option Wheel:** `/components/option-wheel` — curved kinetic selector with pointer, wheel, and keyboard interaction.
+- **Text Loop:** `/components/text-loop` — animated SVG text paths with configurable shapes, ribbons, drag momentum, hover pause, and scroll boost.
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
 
 Open the hamburger menu on the home page to navigate to all component showcases.
+
+## Branched Menu
+
+The component source is based on the supplied React Bits BranchedMenu JS/CSS example and is adapted to this repository's portability contract: its styles are a local CSS Module, and icons are passed as React nodes so the reusable component does not add a Hugeicons runtime dependency.
+
+Install in a compatible shadcn / React Bits setup:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/BranchedMenu-JS-CSS
+```
+
+The source is checked into `components/branched-menu/` and demonstrated at `/components/branched-menu`.
+
+```tsx
+import { Download, Rocket, Settings2 } from "lucide-react";
+import BranchedMenu from "@/components/branched-menu/BranchedMenu";
+
+<BranchedMenu
+  items={[
+    {
+      label: "Getting started",
+      children: [
+        { value: "install", label: "Installation", icon: <Download size={16} /> },
+        { value: "quick", label: "Quick start", icon: <Rocket size={16} /> },
+        { value: "config", label: "Configuration", icon: <Settings2 size={16} /> }
+      ]
+    },
+    { label: "Components", children: [{ value: "buttons", label: "Buttons" }] }
+  ]}
+  defaultOpen={[0]}
+  defaultActive="quick"
+  onSelect={(value) => console.log("Selected:", value)}
+  color="#f5f5f5"
+  accentColor="#f5f5f5"
+  lineColor="#3f3f46"
+  width={240}
+  rowHeight={36}
+  indent={40}
+  trunk={14}
+  radius={10}
+  lineWidth={1.5}
+  fontSize={14}
+  drawDuration={400}
+  foldDuration={300}
+/>
+```
+
+Use `onToggle(index, isOpen)` to observe section changes. The component supports multiple open sections through `defaultOpen`, manages its own active item, and reports selection through `onSelect`. For Hugeicons, wrap the icon data in your app's `HugeiconsIcon` component and pass the rendered element through `icon`. The component itself has no Hugeicons dependency.
 
 ## Glass Surface
 
@@ -112,6 +163,7 @@ import TextLoop from "@/components/text-loop/TextLoop";
   pauseOnHover
 />
 ```
+
 
 ## Floating bottom navigation
 

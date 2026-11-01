@@ -7,9 +7,11 @@ import {
   ArrowUpRight,
   Blocks,
   CircleCheck,
+  Clapperboard,
   Command,
   Disc3,
   Droplets,
+  GitBranch,
   Layers3,
   Menu,
   Mountain,
@@ -24,8 +26,10 @@ import styles from "./page.module.css";
 
 const navigationIcons = {
   Blocks,
+  Clapperboard,
   Disc3,
   Droplets,
+  GitBranch,
   Layers3,
   Mountain,
   Radar,
