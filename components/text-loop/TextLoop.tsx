@@ -361,7 +361,8 @@ export default function TextLoop({
     if (pauseOnHover) {
       root.addEventListener('pointerenter', onEnter);
       root.addEventListener('pointerleave', onLeave);
-      const pointerIsInside = hoveredRef.current || root.matches(':hover');
+      const hoverCapable = Boolean(window.matchMedia?.('(hover: hover)')?.matches);
+      const pointerIsInside = hoveredRef.current || (hoverCapable && root.matches(':hover'));
       hoveredRef.current = pointerIsInside;
       glide(pointerIsInside);
     } else {
