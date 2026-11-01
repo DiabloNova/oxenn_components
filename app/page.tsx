@@ -8,6 +8,7 @@ import {
   Blocks,
   CircleCheck,
   Command,
+  Disc3,
   Droplets,
   Layers3,
   Menu,
@@ -23,6 +24,7 @@ import styles from "./page.module.css";
 
 const navigationIcons = {
   Blocks,
+  Disc3,
   Droplets,
   Layers3,
   Mountain,
