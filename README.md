@@ -206,17 +206,21 @@ The component source is based on the official [React Bits Lanyard JS/CSS registr
 ```tsx
 import Lanyard from "@/components/lanyard/Lanyard";
 
-<div style={{ width: "100%", height: 600 }}>
-  <Lanyard
-    frontImage="/lanyard-front.jpg"
-    backImage="/lanyard-back.svg"
-    orientation="portrait"
-    finish="glossy"
-    metal="graphite"
-    interactive
-    intro
-  />
-</div>
+export default function LanyardExample() {
+  return (
+    <div style={{ width: "100%", height: 600 }}>
+      <Lanyard
+        frontImage="/lanyard-front.jpg"
+        backImage="/lanyard-back.svg"
+        orientation="portrait"
+        finish="glossy"
+        metal="graphite"
+        interactive
+        intro
+      />
+    </div>
+  );
+}
 ```
 
 The showcase uses the supplied portrait on the front and an Oxenn mark on the reverse. Both card images are local assets in `public/`; a strap texture is optional.
