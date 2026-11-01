@@ -15,6 +15,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   width: min(var(--bm-width), 100%);
   padding-left: 14px;
   color: var(--bm-ink);
@@ -82,6 +83,10 @@
   outline: 2px solid var(--bm-accent);
   outline-offset: 3px;
   border-radius: 3px;
+}
+
+.item:focus-visible {
+  outline-offset: -2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -191,6 +196,10 @@
   .lines,
   .heading,
   .item {
+    transition: none;
+  }
+
+  .section[data-open] .lines {
     transition: none;
   }
 }
