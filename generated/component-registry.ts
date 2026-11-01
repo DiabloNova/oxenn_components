@@ -17,6 +17,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "gradient-blinds",
+    "href": "/components/gradient-blinds",
+    "title": "Gradient Blinds",
+    "icon": "Waves",
+    "order": 25,
+    "navigation": true
+  },
+  {
     "slug": "glass-surface",
     "href": "/components/glass-surface",
     "title": "Glass Surface",

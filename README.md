@@ -43,6 +43,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
 - **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
+- **Gradient Blinds:** `/components/gradient-blinds` — the official React Bits GradientBlinds JS/CSS source with WebGL2 satin slats, pointer spotlight, sway, and click-triggered ripples.
 - **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
 - **Branched Menu:** `/components/branched-menu` — animated tree navigation with expandable sections, SVG connector paths, and selection callbacks.
@@ -122,6 +123,32 @@ pnpm dlx shadcn@latest add @react-bits/GradientWaves-JS-CSS
 ```
 
 The component is checked into `components/gradient-waves/` so it remains locally owned and works with this repository's App Router showcase.
+
+## Gradient Blinds
+
+The component source is taken from the official [React Bits GradientBlinds JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/GradientBlinds-JS-CSS.json). To install it in a compatible shadcn setup:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/GradientBlinds-JS-CSS
+```
+
+The component is checked into `components/gradient-blinds/` and demonstrated at `/components/gradient-blinds`. It uses WebGL2 for the animated slats, pointer-following spotlight, and click ripples.
+
+```jsx
+import GradientBlinds from "@/components/gradient-blinds/GradientBlinds";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <GradientBlinds
+    gradientColors={["#8b8788", "#215ab6"]}
+    angle={20}
+    blindCount={16}
+    blindMinWidth={60}
+    spotlightRadius={0.5}
+    clickEffect="ripple"
+    intro
+  />
+</div>
+```
 
 ## Topography
 
