@@ -81,7 +81,7 @@ import BranchedMenu from "@/components/branched-menu/BranchedMenu";
   ]}
   defaultOpen={[0]}
   defaultActive="quick"
-  onSelect={(value, item) => navigate(value)}
+  onSelect={(value) => console.log("Selected:", value)}
   color="#f5f5f5"
   accentColor="#f5f5f5"
   lineColor="#3f3f46"
