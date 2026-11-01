@@ -137,8 +137,18 @@ const parse = value => {
   }
   const rgba = /rgba?\(([^)]+)\)/i.exec(String(value));
   if (rgba) {
-    const parts = rgba[1].split(',').map(part => parseFloat(part));
-    return [parts[0] / 255, parts[1] / 255, parts[2] / 255, parts[3] ?? 1];
+    const parts = rgba[1].trim().split(/[\s,/]+/).filter(Boolean);
+    if (parts.length < 3) return [1, 1, 1, 1];
+    const channel = part => {
+      const numeric = parseFloat(part);
+      return part.endsWith('%') ? clamp01(numeric / 100) : numeric / 255;
+    };
+    const alpha = parts[3]
+      ? parts[3].endsWith('%')
+        ? clamp01(parseFloat(parts[3]) / 100)
+        : clamp01(parseFloat(parts[3]))
+      : 1;
+    return [channel(parts[0]), channel(parts[1]), channel(parts[2]), alpha];
   }
   return [1, 1, 1, 1];
 };
@@ -165,8 +175,13 @@ const pillPath = (x, y, w, h) => {
 
 const compile = (gl, type, source) => {
   const shader = gl.createShader(type);
+  if (!shader) return null;
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    gl.deleteShader(shader);
+    return null;
+  }
   return shader;
 };
 
@@ -187,15 +202,37 @@ const UNIFORMS = [
 
 const build = gl => {
   const program = gl.createProgram();
-  gl.attachShader(program, compile(gl, gl.VERTEX_SHADER, VERTEX));
-  gl.attachShader(program, compile(gl, gl.FRAGMENT_SHADER, FRAGMENT));
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  if (!program) return null;
+
+  const vertexShader = compile(gl, gl.VERTEX_SHADER, VERTEX);
+  const fragmentShader = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
+  if (!vertexShader || !fragmentShader) {
+    if (vertexShader) gl.deleteShader(vertexShader);
+    if (fragmentShader) gl.deleteShader(fragmentShader);
     gl.deleteProgram(program);
     return null;
   }
+
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  const linked = gl.getProgramParameter(program, gl.LINK_STATUS);
+  gl.detachShader(program, vertexShader);
+  gl.detachShader(program, fragmentShader);
+  gl.deleteShader(vertexShader);
+  gl.deleteShader(fragmentShader);
+
+  if (!linked) {
+    gl.deleteProgram(program);
+    return null;
+  }
+
   const uniforms = Object.fromEntries(UNIFORMS.map(name => [name, gl.getUniformLocation(program, name)]));
   const buffer = gl.createBuffer();
+  if (!buffer) {
+    gl.deleteProgram(program);
+    return null;
+  }
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   return { program, uniforms, buffer, position: gl.getAttribLocation(program, 'aPosition') };
@@ -204,11 +241,11 @@ const build = gl => {
 const GooeyNav = ({
   items = DEFAULT_ITEMS,
   initialActiveIndex = 0,
-  activeIndex,
+  activeIndex = undefined,
   onChange,
   theme = 'dark',
-  color,
-  activeTextColor,
+  color = undefined,
+  activeTextColor = undefined,
   colors = [],
   size = 'md',
   frame = true,
@@ -220,7 +257,9 @@ const GooeyNav = ({
   wobble = 0.5,
   hoverEffect = true,
   className = '',
-  style
+  style = {},
+  ariaLabel = 'Primary navigation',
+  ariaLabelledBy
 }) => {
   const [innerIndex, setInnerIndex] = useState(initialActiveIndex);
   const current = Math.min(Math.max(0, activeIndex ?? innerIndex), Math.max(0, items.length - 1));
@@ -265,7 +304,8 @@ const GooeyNav = ({
     const fallback = fallbackRef.current;
     if (!stage || !canvas || !list || !overlay || !fallback) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let reduced = motionQuery.matches;
     const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false });
     const pipeline = gl ? build(gl) : null;
     fallback.style.display = pipeline ? 'none' : 'block';
@@ -310,56 +350,36 @@ const GooeyNav = ({
       });
     };
 
-    const trace = (boxes, blobs, smooth) => {
-      const field = (x, y) => {
-        let d = 1e5;
-        const merge = value => {
-          const h = clamp01(0.5 + (0.5 * (value - d)) / smooth);
-          d = value + (d - value) * h - smooth * h * (1 - h);
-        };
-        for (const box of boxes) {
-          const r = Math.min(box.hw, box.hh);
-          const qx = Math.abs(x - box.cx) - box.hw + r;
-          const qy = Math.abs(y - box.cy) - box.hh + r;
-          merge(Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r);
+    // Keep the text overlay clipped to the same geometry without raster-scanning
+    // every pixel on every animation frame. WebGL remains responsible for the
+    // smooth metaball union; these compact paths only gate the active text.
+    const trace = (boxes, blobs) => {
+      const parts = boxes
+        .map(box => pillPath(box.cx - box.hw, box.cy - box.hh, box.hw * 2, box.hh * 2))
+        .filter(Boolean);
+
+      for (const blob of blobs) {
+        const length = Math.hypot(blob.tx, blob.ty);
+        if (length <= 0.001) {
+          const r = blob.r;
+          parts.push(`M${blob.x + r},${blob.y}A${r},${r} 0 0 1 ${blob.x - r},${blob.y}A${r},${r} 0 0 1 ${blob.x + r},${blob.y}Z`);
+          continue;
         }
-        for (const blob of blobs) {
-          const px = x - blob.x;
-          const py = y - blob.y;
-          const bx = -blob.tx;
-          const by = -blob.ty;
-          const span = bx * bx + by * by;
-          const h = span > 0.0001 ? clamp01((px * bx + py * by) / span) : 0;
-          const value = Math.hypot(px - bx * h, py - by * h) - blob.r;
-          if (value > d + smooth) continue;
-          merge(value);
-        }
-        return d;
-      };
-      const step = 2;
-      const parts = [];
-      for (let y = 0; y < view.height; y += 1) {
-        const cy = y + 0.5;
-        let previous = field(0, cy);
-        let start = previous < 0 ? 0 : null;
-        for (let x = step; x <= view.width + step; x += step) {
-          const value = field(Math.min(x, view.width), cy);
-          if (previous < 0 !== value < 0) {
-            const cross = x - step + (step * previous) / (previous - value);
-            if (value < 0) start = cross;
-            else if (start !== null) {
-              parts.push(`M${start.toFixed(1)},${y}H${cross.toFixed(1)}V${y + 1}H${start.toFixed(1)}Z`);
-              start = null;
-            }
-          }
-          previous = value;
-        }
-        if (start !== null) parts.push(`M${start.toFixed(1)},${y}H${view.width}V${y + 1}H${start.toFixed(1)}Z`);
+
+        const nx = blob.ty / length;
+        const ny = -blob.tx / length;
+        const endX = blob.x - blob.tx;
+        const endY = blob.y - blob.ty;
+        const r = blob.r;
+        parts.push(
+          `M${blob.x + nx * r},${blob.y + ny * r}L${endX + nx * r},${endY + ny * r}A${r},${r} 0 0 1 ${endX - nx * r},${endY - ny * r}L${blob.x - nx * r},${blob.y - ny * r}A${r},${r} 0 0 1 ${blob.x + nx * r},${blob.y + ny * r}Z`
+        );
       }
+
       return parts.join('');
     };
 
-    const pill = index => {
+    const pill    const pill = index => {
       if (!pills.has(index)) pills.set(index, { mass: 0, scale: 0, velocity: 0, outgoing: 0 });
       return pills.get(index);
     };
@@ -466,7 +486,7 @@ const GooeyNav = ({
         const box = boxes[0];
         overlay.style.clipPath = `path('${pillPath(box.cx - box.hw, box.cy - box.hh, box.hw * 2, box.hh * 2)}')`;
       } else {
-        overlay.style.clipPath = `path('${trace(boxes, blobs, smooth) || 'M0,0Z'}')`;
+        overlay.style.clipPath = `path('${trace(boxes, blobs) || 'M0,0Z'}')`;
       }
       overlay.style.visibility = 'visible';
 
@@ -643,6 +663,18 @@ const GooeyNav = ({
       render();
     };
 
+    const onMotionPreferenceChange = event => {
+      reduced = event.matches;
+      if (reduced) {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        settle(target < 0 ? indexRef.current : target);
+      } else {
+        wake();
+      }
+    };
+    motionQuery.addEventListener('change', onMotionPreferenceChange);
+
     const go = (index, animate) => {
       if (index === target) return;
       if (!rects[index] || !animate || reduced || target < 0) {
@@ -697,6 +729,16 @@ const GooeyNav = ({
     resizeObserver.observe(stage);
     resizeObserver.observe(list);
 
+    const mutationObserver = new MutationObserver(() => {
+      measure();
+      if (!drops.length) settle(target < 0 ? indexRef.current : target);
+      else {
+        render();
+        wake();
+      }
+    });
+    mutationObserver.observe(list, { childList: true, characterData: true, subtree: true });
+
     list.addEventListener('pointerover', onOver);
     list.addEventListener('pointerleave', onLeave);
 
@@ -711,8 +753,12 @@ const GooeyNav = ({
     engineRef.current = {
       go: index => go(index, true),
       refresh: () => {
-        render();
-        wake();
+        measure();
+        if (!drops.length) settle(target < 0 ? indexRef.current : target);
+        else {
+          render();
+          wake();
+        }
       }
     };
 
@@ -720,6 +766,8 @@ const GooeyNav = ({
       disposed = true;
       cancelAnimationFrame(raf);
       resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      motionQuery.removeEventListener('change', onMotionPreferenceChange);
       list.removeEventListener('pointerover', onOver);
       list.removeEventListener('pointerleave', onLeave);
       if (gl && pipeline) {
@@ -733,6 +781,10 @@ const GooeyNav = ({
   useEffect(() => {
     engineRef.current?.go(current);
   }, [current]);
+
+  useEffect(() => {
+    engineRef.current?.refresh();
+  }, [items]);
 
   useEffect(() => {
     engineRef.current?.refresh();
@@ -785,6 +837,8 @@ const GooeyNav = ({
 
   return (
     <nav
+      aria-label={ariaLabelledBy ? undefined : ariaLabel}
+      aria-labelledby={ariaLabelledBy}
       className={`gooey-nav ${SIZES[size] ?? SIZES.md}${frame ? ' gooey-nav--framed' : ''} ${className}`.trim()}
       style={{ ...THEMES[palette], '--gn-pill': pillColor, '--gn-active-ink': textColor, ...style }}
     >
