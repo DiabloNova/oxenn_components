@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-import './Lanyard.css';
+import styles from './Lanyard.module.css';
 
 const CARD_SIZES = {
   portrait: [1.6, 2.25],
@@ -154,9 +154,11 @@ const parseColor = (value, fallback) => {
   try {
     const ctx = document.createElement('canvas').getContext('2d');
     if (!ctx) return fallback;
-    ctx.fillStyle = '#000000';
+    const sentinel = '#010203';
+    ctx.fillStyle = sentinel;
     ctx.fillStyle = value;
     const resolved = ctx.fillStyle;
+    if (resolved === sentinel) return fallback;
     if (resolved.startsWith('#')) {
       const n = parseInt(resolved.slice(1), 16);
       return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
@@ -771,7 +773,7 @@ const Lanyard = ({
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 1;
     const canvas = renderer.domElement;
-    canvas.className = 'lanyard-canvas';
+    canvas.className = styles.lanyardCanvas;
     canvas.setAttribute('aria-hidden', 'true');
     container.appendChild(canvas);
 
@@ -914,8 +916,14 @@ const Lanyard = ({
     const frameView = () => {
       const s = settingsRef.current;
       const aspect = view.width / view.height;
-      let viewHeight = layout.height / clamp(s.size, 0.15, 0.9);
-      const minimumWidth = layout.width / 0.72;
+      const strapOffset = mix(0.12, 0.42, clamp(s.strapLength, 0, 1));
+      let viewHeight = Math.max(
+        layout.height / clamp(s.size, 0.15, 0.9),
+        layout.height / (1 - strapOffset)
+      );
+      const anchorPosition = ANCHORS[s.anchor] ?? 0.5;
+      const availableWidthRatio = Math.min(0.72, 2 * Math.min(anchorPosition, 1 - anchorPosition));
+      const minimumWidth = layout.width / Math.max(availableWidthRatio, 0.01);
       if (viewHeight * aspect < minimumWidth) viewHeight = minimumWidth / aspect;
       const viewWidth = viewHeight * aspect;
       camera.aspect = aspect;
@@ -1236,12 +1244,20 @@ const Lanyard = ({
       if (pickCard()) event.preventDefault();
     };
 
+    const onKeyboardFlip = event => {
+      if (!settingsRef.current.interactive || event.repeat || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      flip(sim.body.position.clone());
+      start();
+    };
+
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
     canvas.addEventListener('pointercancel', onPointerUp);
     canvas.addEventListener('lostpointercapture', onPointerUp);
     canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('keydown', onKeyboardFlip);
 
     const resize = () => {
       view.width = Math.max(1, container.clientWidth);
@@ -1280,16 +1296,28 @@ const Lanyard = ({
       canvas.removeEventListener('pointercancel', onPointerUp);
       canvas.removeEventListener('lostpointercapture', onPointerUp);
       canvas.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('keydown', onKeyboardFlip);
       [bodyMesh, frontMesh, backMesh, ring, clampMesh, eyelet, band].forEach(mesh => mesh.geometry?.dispose());
       [frontMaterial, backMaterial, edgeMaterial, metalMaterial, bandMaterial].forEach(material => material.dispose());
       [frontTexture, backTexture, strapTexture, grain, weave].forEach(texture => texture.dispose());
       environment.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
   }, []);
 
-  return <div ref={containerRef} className={`lanyard ${className}`.trim()} style={style} />;
+  return (
+    <div
+      ref={containerRef}
+      className={`${styles.lanyard} ${className}`.trim()}
+      style={style}
+      role="button"
+      tabIndex={interactive ? 0 : -1}
+      aria-label="Interactive identity badge. Press Enter or Space to flip between the front and back. Pointer users can drag the badge."
+      aria-keyshortcuts="Enter Space"
+    />
+  );
 };
 
 export default Lanyard;
