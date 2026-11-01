@@ -324,7 +324,7 @@ const WarpText = ({
     let lastInk = '';
 
     const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, active: 0, activeTarget: 0 };
-    const clicks = Array.from({ length: MAX_CLICKS }, () => [0.5, 0.5, 0, 0]);
+    const clicks = new Float32Array(MAX_CLICKS * 4);
     let clickSlot = 0;
     const startTime = performance.now();
 
@@ -439,12 +439,12 @@ const WarpText = ({
       if (!propsRef.current.clickRipple) return;
       const rect = canvas.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
-      const click = clicks[clickSlot];
-      clickSlot = (clickSlot + 1) % clicks.length;
-      click[0] = (event.clientX - rect.left) / rect.width;
-      click[1] = 1 - (event.clientY - rect.top) / rect.height;
-      click[2] = 0;
-      click[3] = reduceMotion ? 0.35 : 1;
+      const offset = clickSlot * 4;
+      clickSlot = (clickSlot + 1) % MAX_CLICKS;
+      clicks[offset] = (event.clientX - rect.left) / rect.width;
+      clicks[offset + 1] = 1 - (event.clientY - rect.top) / rect.height;
+      clicks[offset + 2] = 0;
+      clicks[offset + 3] = reduceMotion ? 0.35 : 1;
     };
     const onContextLost = event => {
       event.preventDefault();
@@ -488,11 +488,12 @@ const WarpText = ({
       pointer.y += ((engaged ? pointer.ty : idleY) - pointer.y) * follow;
       pointer.active += ((engaged ? 1 : drift) - pointer.active) * (1 - Math.exp(-delta / 270));
 
-      clicks.forEach(click => {
-        if (click[3] <= 0) return;
-        click[2] += delta / 1000;
-        if (click[2] > RIPPLE_LIFE) click[3] = 0;
-      });
+      for (let index = 0; index < MAX_CLICKS; index += 1) {
+        const offset = index * 4;
+        if (clicks[offset + 3] <= 0) continue;
+        clicks[offset + 2] += delta / 1000;
+        if (clicks[offset + 2] > RIPPLE_LIFE) clicks[offset + 3] = 0;
+      }
 
       program.uniforms.uPointer.value[0] = pointer.x;
       program.uniforms.uPointer.value[1] = pointer.y;
@@ -543,10 +544,10 @@ const WarpText = ({
       mediaQuery?.removeEventListener('change', onReducedMotion);
       if (!contextLost) {
         try {
-          texture?.remove?.();
+          if (texture?.texture) gl.deleteTexture(texture.texture);
           geometry?.remove?.();
           program?.remove?.();
-          renderer?.gl?.getExtension('WEBGL_lose_context')?.loseContext();
+          // Leave the browser-managed WebGL context intact.
         } catch { /* The browser may already have disposed the WebGL context. */ }
       }
       if (canvas.parentNode === container) container.removeChild(canvas);
