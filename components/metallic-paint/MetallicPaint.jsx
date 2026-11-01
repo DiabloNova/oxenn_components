@@ -443,8 +443,8 @@ const compile = (gl, type, source) => {
 };
 
 export default function MetallicPaint({
-  imageSrc,
-  text,
+  imageSrc = undefined,
+  text = undefined,
   fontFamily = 'system-ui, sans-serif',
   fontWeight = 800,
   color = '#ffffff',
@@ -462,7 +462,7 @@ export default function MetallicPaint({
   lightMode = false,
   intro = true,
   paused = false,
-  dpr,
+  dpr = undefined,
   className = '',
   style
 }) {
