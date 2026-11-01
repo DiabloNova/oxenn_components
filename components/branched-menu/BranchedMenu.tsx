@@ -134,7 +134,7 @@ export default function BranchedMenu({
     });
     observer.observe(navRef.current);
     return () => observer.disconnect();
-  }, [activeSection, markerShown, items, fontSize, rowHeight]);
+  }, [activeSection, markerShown, fontSize, rowHeight]);
 
   const selectItem = (value: string, item: BranchedMenuItem | BranchedMenuSection) => {
     setActive(value);
@@ -155,7 +155,10 @@ export default function BranchedMenu({
   const safeRowHeight = Math.max(20, rowHeight);
   const safeIndent = Math.max(12, indent);
   const safeTrunk = Math.max(4, Math.min(trunk, safeIndent - 8));
-  const cornerRadius = Math.max(2, Math.min(radius, safeRowHeight / 2 - 2));
+  const cornerRadius = Math.max(
+    0,
+    Math.min(radius, safeRowHeight / 2 - 2, safeIndent - 8 - safeTrunk),
+  );
   const endX = safeIndent - 8;
   const rowY = (index: number) => PAD + index * safeRowHeight + safeRowHeight / 2;
   const branch = (index: number) =>
@@ -241,7 +244,7 @@ export default function BranchedMenu({
                             d={reach(childIndex)}
                             style={{
                               strokeDasharray: length,
-                              strokeDashoffset: child.value === active ? 0 : length,
+                              strokeDashoffset: child.value === active && isOpen ? 0 : length,
                             }}
                           />
                         );
