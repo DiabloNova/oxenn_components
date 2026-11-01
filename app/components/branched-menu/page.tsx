@@ -38,9 +38,11 @@ const MENU_ITEMS = [
   },
 ];
 
+const DESTINATIONS = MENU_ITEMS.flatMap((section) => section.children);
+
 export default function BranchedMenuPage() {
   const [selected, setSelected] = useState('quick');
-  const [openSections, setOpenSections] = useState([0]);
+  const [lastToggle, setLastToggle] = useState('Getting started is expanded by default');
 
   return (
     <main className={styles.page}>
@@ -73,9 +75,10 @@ export default function BranchedMenuPage() {
             <div className={styles.panelTop}><span className={styles.panelMark}><GitBranch size={14} /> GUIDE / 01</span><span>DOCS</span></div>
             <BranchedMenu
               items={MENU_ITEMS}
-              defaultOpen={openSections}
+              defaultOpen={[0]}
               defaultActive="quick"
               onSelect={(value) => setSelected(value)}
+              onToggle={(index, isOpen) => setLastToggle(`${MENU_ITEMS[index]?.label ?? 'Section'} ${isOpen ? 'expanded' : 'collapsed'}`)}
               color="#e8edf7"
               accentColor="#b6d5ff"
               lineColor="#354156"
@@ -97,13 +100,12 @@ export default function BranchedMenuPage() {
         </div>
 
         <div className={styles.selection}>
-          <div><span className={styles.eyebrow}>CURRENT DESTINATION</span><strong>{MENU_ITEMS.flatMap((section) => section.children).find((item) => item.value === selected)?.label ?? selected}</strong></div>
+          <div><span className={styles.eyebrow}>CURRENT DESTINATION</span><strong>{DESTINATIONS.find((item) => item.value === selected)?.label ?? selected}</strong></div>
           <code>{selected}</code>
         </div>
         <div className={styles.toolbar}>
-          <button type="button" onClick={() => setOpenSections([0, 1])}>Expand sections</button>
-          <button type="button" onClick={() => setOpenSections([])}>Collapse sections</button>
-          <span>Click any section heading to toggle its branch</span>
+          <span>{lastToggle}</span>
+          <span>Click a section heading to expand or collapse its branch</span>
         </div>
       </section>
 
