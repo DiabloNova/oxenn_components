@@ -82,7 +82,6 @@ export default function GradientBlindsPage() {
             gradientColors={["#8b8788", "#215ab6"]}
             angle={20}
             blindCount={16}
-            dpr={2}
             blindMinWidth={60}
             spotlightRadius={0.5}
             shine={0.4}
