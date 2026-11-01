@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './MetallicPaint.css';
 
 const WORKING_SIZE = 512;
+const MAX_WORKING_PIXELS = WORKING_SIZE * WORKING_SIZE;
 const MAX_SIDE = 2048;
 const MAX_PIXELS = 2560 * 1600 * 2;
 
@@ -148,7 +149,7 @@ void main() {
   edge = pow(edge, 1.6);
   edge *= smoothstep(0.0, 0.4, u_contour);
 
-  float opacity = img.g * getImgFrame(v_imageUV, 0.0);
+  float opacity = img.g * getImgFrame(v_imageUV, 0.001);
   float depth = img.r;
 
   float diagBLtoTR = rotatedUV.x - rotatedUV.y;
@@ -380,9 +381,11 @@ const solvePoisson = (mask, width, height) => {
 const processShape = source => {
   const width = source.width;
   const height = source.height;
-  const fit = WORKING_SIZE / Math.min(width, height);
-  const workW = Math.max(2, Math.round(width * fit));
-  const workH = Math.max(2, Math.round(height * fit));
+  const fitForShortSide = WORKING_SIZE / Math.min(width, height);
+  const fitForPixelBudget = Math.sqrt(MAX_WORKING_PIXELS / (width * height));
+  const fit = Math.min(fitForShortSide, fitForPixelBudget);
+  const workW = Math.max(1, Math.floor(width * fit));
+  const workH = Math.max(1, Math.floor(height * fit));
 
   const small = document.createElement('canvas');
   small.width = workW;
@@ -466,6 +469,8 @@ export default function MetallicPaint({
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
+  const imageDataRef = useRef(null);
+  const [canvasVersion, setCanvasVersion] = useState(0);
   const settingsRef = useRef(null);
 
   settingsRef.current = {
@@ -496,13 +501,21 @@ export default function MetallicPaint({
     const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
     const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
     const program = gl.createProgram();
-    if (!vertex || !fragment || !program) return undefined;
+    if (!vertex || !fragment || !program) {
+      if (vertex) gl.deleteShader(vertex);
+      if (fragment) gl.deleteShader(fragment);
+      if (program) gl.deleteProgram(program);
+      return undefined;
+    }
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
     gl.deleteShader(vertex);
     gl.deleteShader(fragment);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return undefined;
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      gl.deleteProgram(program);
+      return undefined;
+    }
     gl.useProgram(program);
 
     const uniforms = {};
@@ -555,8 +568,8 @@ export default function MetallicPaint({
     const resize = () => {
       const s = settingsRef.current;
       const rect = container.getBoundingClientRect();
-      const base = s.dpr ?? Math.min(window.devicePixelRatio || 1, 2);
-      let ratio = Math.max(base, 2);
+      const requestedRatio = Number.isFinite(s.dpr) ? s.dpr : window.devicePixelRatio || 1;
+      let ratio = clamp(requestedRatio, 0.5, 2);
       const pixels = rect.width * rect.height * ratio * ratio;
       if (pixels > MAX_PIXELS) ratio *= Math.sqrt(MAX_PIXELS / pixels);
       const width = Math.max(1, Math.round(rect.width * ratio));
@@ -606,11 +619,11 @@ export default function MetallicPaint({
       const s = settingsRef.current;
       const dt = state.last ? Math.min(0.05, (now - state.last) / 1000) : 1 / 60;
       state.last = now;
-      const moving = !s.paused && !reduce && s.speed !== 0;
+      const moving = state.hasImage && !s.paused && !reduce && s.speed !== 0;
       if (moving) state.time += dt * s.speed;
 
       let busy = moving;
-      if (state.reveal < 1 && !state.pending) {
+      if (state.hasImage && state.reveal < 1 && !state.pending) {
         if (state.revealStart < 0) state.revealStart = now;
         const progress = clamp((now - state.revealStart) / 1600, 0, 1);
         state.reveal = 1 - (1 - progress) ** 3;
@@ -618,22 +631,24 @@ export default function MetallicPaint({
         busy = true;
       }
 
-      const stiffness = 60;
-      const damping = 14;
-      const steps = Math.max(1, Math.ceil(dt / (1 / 240)));
-      const h = dt / steps;
-      for (let i = 0; i < steps; i++) {
-        state.velocityX += (stiffness * (state.targetX * s.mouseTilt - state.tiltX) - damping * state.velocityX) * h;
-        state.velocityY += (stiffness * (state.targetY * s.mouseTilt - state.tiltY) - damping * state.velocityY) * h;
-        state.tiltX += state.velocityX * h;
-        state.tiltY += state.velocityY * h;
-      }
-      if (
-        Math.abs(state.targetX * s.mouseTilt - state.tiltX) > 0.0005 ||
-        Math.abs(state.targetY * s.mouseTilt - state.tiltY) > 0.0005 ||
-        Math.abs(state.velocityX) + Math.abs(state.velocityY) > 0.0005
-      ) {
-        busy = true;
+      if (state.hasImage) {
+        const stiffness = 60;
+        const damping = 14;
+        const steps = Math.max(1, Math.ceil(dt / (1 / 240)));
+        const h = dt / steps;
+        for (let i = 0; i < steps; i++) {
+          state.velocityX += (stiffness * (state.targetX * s.mouseTilt - state.tiltX) - damping * state.velocityX) * h;
+          state.velocityY += (stiffness * (state.targetY * s.mouseTilt - state.tiltY) - damping * state.velocityY) * h;
+          state.tiltX += state.velocityX * h;
+          state.tiltY += state.velocityY * h;
+        }
+        if (
+          Math.abs(state.targetX * s.mouseTilt - state.tiltX) > 0.0005 ||
+          Math.abs(state.targetY * s.mouseTilt - state.tiltY) > 0.0005 ||
+          Math.abs(state.velocityX) + Math.abs(state.velocityY) > 0.0005
+        ) {
+          busy = true;
+        }
       }
 
       draw();
@@ -646,6 +661,7 @@ export default function MetallicPaint({
     };
 
     const onMove = event => {
+      if (reduce || !state.hasImage) return;
       const rect = container.getBoundingClientRect();
       state.targetX = clamp(((event.clientX - rect.left) / rect.width) * 2 - 1, -1.2, 1.2);
       state.targetY = clamp(((event.clientY - rect.top) / rect.height) * 2 - 1, -1.2, 1.2);
@@ -653,6 +669,7 @@ export default function MetallicPaint({
     };
 
     const onLeave = () => {
+      if (reduce || !state.hasImage) return;
       state.targetX = 0;
       state.targetY = 0;
       wake();
@@ -675,8 +692,12 @@ export default function MetallicPaint({
       state.alive = false;
       cancelAnimationFrame(state.raf);
     };
+    const onRestored = () => {
+      setCanvasVersion(version => version + 1);
+    };
 
     canvas.addEventListener('webglcontextlost', onLost);
+    canvas.addEventListener('webglcontextrestored', onRestored);
     container.addEventListener('pointermove', onMove);
     container.addEventListener('pointerleave', onLeave);
 
@@ -686,6 +707,7 @@ export default function MetallicPaint({
         draw();
       },
       setImage: data => {
+        imageDataRef.current = data;
         state.pending = false;
         gl.bindTexture(gl.TEXTURE_2D, texture);
         if (data) {
@@ -722,8 +744,11 @@ export default function MetallicPaint({
     };
 
     resize();
-    draw();
-    wake();
+    if (imageDataRef.current) engineRef.current.setImage(imageDataRef.current);
+    else {
+      draw();
+      wake();
+    }
 
     return () => {
       state.alive = false;
@@ -731,6 +756,7 @@ export default function MetallicPaint({
       resizeObserver.disconnect();
       visibility.disconnect();
       canvas.removeEventListener('webglcontextlost', onLost);
+      canvas.removeEventListener('webglcontextrestored', onRestored);
       container.removeEventListener('pointermove', onMove);
       container.removeEventListener('pointerleave', onLeave);
       engineRef.current = null;
@@ -739,24 +765,32 @@ export default function MetallicPaint({
       gl.deleteVertexArray(vao);
       gl.deleteProgram(program);
     };
-  }, []);
+  }, [canvasVersion]);
 
   useEffect(() => {
     let active = true;
     const source = text ? drawTextSource(text, fontFamily, fontWeight) : imageSrc ? drawImageSource(imageSrc) : null;
     if (!source) {
+      imageDataRef.current = null;
       engineRef.current?.setImage(null);
       return undefined;
     }
+    imageDataRef.current = null;
     engineRef.current?.setPending(true);
     source
       .then(canvas => {
         if (!active || !canvas) return;
         const data = processShape(canvas);
-        if (active) engineRef.current?.setImage(data);
+        if (active) {
+          imageDataRef.current = data;
+          engineRef.current?.setImage(data);
+        }
       })
       .catch(() => {
-        if (active) engineRef.current?.setImage(null);
+        if (active) {
+          imageDataRef.current = null;
+          engineRef.current?.setImage(null);
+        }
       });
     return () => {
       active = false;
@@ -769,7 +803,7 @@ export default function MetallicPaint({
 
   return (
     <div ref={containerRef} className={`metallic-paint ${className}`.trim()} style={style}>
-      <canvas ref={canvasRef} className="metallic-paint-canvas" />
+      <canvas key={canvasVersion} ref={canvasRef} className="metallic-paint-canvas" aria-hidden="true" />
     </div>
   );
 }
