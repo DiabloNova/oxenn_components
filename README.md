@@ -142,7 +142,7 @@ The checked-in component is an adaptation of the supplied React Bits TextLoop JS
 pnpm dlx shadcn@latest add @react-bits/TextLoop-JS-CSS
 ```
 
-The component is checked into `components/text-loop/` and showcased at `/components/text-loop`. It imports GSAP at runtime, so every consuming app must install a compatible version explicitly (for example, `pnpm add gsap@^3.13.0`). The GSAP dependency in this repository's `package.json` supports the local showcase and is not transferred automatically with the component subtree. `ribbonColor` and `crossColor` accept 3- or 6-digit hexadecimal values (`#RGB` or `#RRGGBB`). The component stylesheet is a local CSS Module for safe subtree reuse.
+The component is checked into `components/text-loop/` and showcased at `/components/text-loop`. It imports GSAP at runtime, so every consuming app must install a compatible version explicitly (for example, `pnpm add gsap@^3.13.0`). The GSAP dependency in this repository's `package.json` supports the local showcase and is not transferred automatically with the component subtree. `ribbonColor` and `crossColor` accept CSS color values (including hex, named, `rgb()`, and `hsl()` colors); the crossing ribbon uses `color-mix()` to lighten its stroke for a contrasting dark text overlay. The component stylesheet is a local CSS Module for safe subtree reuse.
 
 ```tsx
 import TextLoop from "@/components/text-loop/TextLoop";
