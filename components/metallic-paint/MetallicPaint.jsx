@@ -323,10 +323,14 @@ const drawTextSource = async (text, fontFamily, fontWeight) => {
   const left = metrics.actualBoundingBoxLeft || 0;
   const right = metrics.actualBoundingBoxRight || metrics.width;
   const pad = size * 0.12;
+  const measuredWidth = Math.ceil(left + right + pad * 2);
+  const measuredHeight = Math.ceil(ascent + descent + pad * 2);
+  const fit = Math.min(1, MAX_SIDE / Math.max(measuredWidth, measuredHeight));
   const canvas = document.createElement('canvas');
-  canvas.width = Math.ceil(left + right + pad * 2);
-  canvas.height = Math.ceil(ascent + descent + pad * 2);
+  canvas.width = Math.max(1, Math.floor(measuredWidth * fit));
+  canvas.height = Math.max(1, Math.floor(measuredHeight * fit));
   const ctx = canvas.getContext('2d');
+  ctx.scale(fit, fit);
   ctx.font = font;
   ctx.fillStyle = '#000';
   ctx.textBaseline = 'alphabetic';
