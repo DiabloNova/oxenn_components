@@ -137,3 +137,9 @@
     color: var(--gn-ink);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .gooey-nav__link {
+    transition: none;
+  }
+}
