@@ -49,6 +49,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "gooey-nav",
+    "href": "/components/gooey-nav",
+    "title": "Gooey Nav",
+    "icon": "Sparkles",
+    "order": 55,
+    "navigation": true
+  },
+  {
     "slug": "option-wheel",
     "href": "/components/option-wheel",
     "title": "Option Wheel",

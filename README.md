@@ -47,6 +47,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
 - **Branched Menu:** `/components/branched-menu` — animated tree navigation with expandable sections, SVG connector paths, and selection callbacks.
+- **Gooey Nav:** `/components/gooey-nav` — liquid active-state navigation with particle transitions, WebGL2 rendering, and a CSS fallback.
 - **Option Wheel:** `/components/option-wheel` — curved kinetic selector with pointer, wheel, and keyboard interaction.
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
 
@@ -248,3 +249,29 @@ npm run build
 ## License
 
 MIT
+
+## Gooey Nav
+
+The component source is based on the official [React Bits GooeyNav JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/GooeyNav-JS-CSS.json). Install it in a compatible shadcn setup with:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/GooeyNav-JS-CSS
+```
+
+The reusable implementation lives in `components/gooey-nav/` and is demonstrated at `/components/gooey-nav`. It supports controlled or internal active state, light/dark themes, particle tuning, hover feedback, and a CSS fallback when WebGL2 is unavailable.
+
+Use `ariaLabel` to name the navigation landmark; when a visible heading should provide the name, pass its id through `ariaLabelledBy` instead.
+
+**Implementation note:** Gooey Nav intentionally retains the official React Bits `.jsx` + `.css` source format instead of converting the upstream source to TypeScript and CSS Modules. This keeps the WebGL implementation close to its published JS/CSS registry version; its global selectors are consistently namespaced with `.gooey-nav` to avoid collisions with other components. This is a documented source-format exception, like the JS/CSS adaptation already described for Glass Surface.
+
+```tsx
+import GooeyNav from "@/components/gooey-nav/GooeyNav";
+
+<GooeyNav
+  items={[{ label: "Home", href: "/" }, { label: "Work", href: "/work" }]}
+  initialActiveIndex={0}
+  theme="light"
+  ariaLabel="Primary navigation"
+  onChange={(index, item) => console.log(index, item.label)}
+/>
+```
