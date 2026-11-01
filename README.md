@@ -83,6 +83,36 @@ pnpm dlx shadcn@latest add @react-bits/Topography-JS-CSS
 
 The component is checked into `components/topography/` and uses WebGL2 for animated terrain rendering. It supports reduced-motion preferences and pointer/click interactions.
 
+## Text Loop
+
+The component source is based on the supplied React Bits TextLoop JS/CSS implementation. To install it in a compatible shadcn setup:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/TextLoop-JS-CSS
+```
+
+The component is checked into `components/text-loop/` and showcased at `/components/text-loop`. It uses GSAP for its ticker and hover easing; GSAP is declared as a source-app dependency. The component stylesheet is a local CSS Module for safe subtree reuse.
+
+```tsx
+import TextLoop from "@/components/text-loop/TextLoop";
+
+<TextLoop
+  text=" OXENN ✦ AI ✦ SEO ✦ AEO ✦ GEO "
+  shape="line"
+  speed={90}
+  direction="forward"
+  separator="✦"
+  curviness={126}
+  fontSize={46}
+  fontWeight={800}
+  ribbon
+  ribbonColor="#5227FF"
+  ribbonWidth={86}
+  draggable
+  pauseOnHover
+/>
+```
+
 ## Floating bottom navigation
 
 ```tsx
