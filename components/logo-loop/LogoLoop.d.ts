@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, NamedExoticComponent, ReactNode } from "react";
 
 export interface LogoNodeItem {
   node: ReactNode;
@@ -53,6 +53,6 @@ export interface LogoLoopProps {
   style?: CSSProperties;
 }
 
-declare const LogoLoop: React.NamedExoticComponent<LogoLoopProps>;
+declare const LogoLoop: NamedExoticComponent<LogoLoopProps>;
 export { LogoLoop };
 export default LogoLoop;
