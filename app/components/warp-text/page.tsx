@@ -8,7 +8,7 @@ import styles from "./page.module.css";
 
 export default function WarpTextPage() {
   const [lightMode, setLightMode] = useState(false);
-  const [lens, setLens] = useState("bulge");
+  const [lens, setLens] = useState<"bulge" | "pinch" | "swirl">("bulge");
 
   return (
     <main className={styles.page} data-theme={lightMode ? "light" : "dark"}>
@@ -30,7 +30,7 @@ export default function WarpTextPage() {
           <span className={styles.hint}><MousePointer2 size={13} /> Move · Click · Explore</span>
           <div className={styles.controls}>
             <label className={styles.lensLabel} htmlFor="warp-lens">Lens</label>
-            <select id="warp-lens" value={lens} onChange={event => setLens(event.target.value)}>
+            <select id="warp-lens" value={lens} onChange={event => setLens(event.target.value as "bulge" | "pinch" | "swirl")}>
               <option value="bulge">Bulge</option>
               <option value="pinch">Pinch</option>
               <option value="swirl">Swirl</option>
