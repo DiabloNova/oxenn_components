@@ -36,7 +36,7 @@ export const componentRegistry = [
     "slug": "reflective-card",
     "href": "/components/reflective-card",
     "title": "Reflective Card",
-    "icon": "BadgeCheck",
+    "icon": "Sparkles",
     "order": 45,
     "navigation": true
   },
