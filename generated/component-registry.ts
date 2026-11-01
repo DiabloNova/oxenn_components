@@ -44,7 +44,7 @@ export const componentRegistry = [
     "slug": "gooey-nav",
     "href": "/components/gooey-nav",
     "title": "Gooey Nav",
-    "icon": "MousePointer2",
+    "icon": "Sparkles",
     "order": 55,
     "navigation": true
   },
