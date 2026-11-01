@@ -258,7 +258,7 @@ const prepStops = stops => {
 const GradientBlinds = ({
   className = '',
   style,
-  dpr,
+  dpr = undefined,
   paused = false,
   gradientColors,
   angle = 0,
