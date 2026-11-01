@@ -259,7 +259,7 @@ const GooeyNav = ({
   className = '',
   style = {},
   ariaLabel = 'Primary navigation',
-  ariaLabelledBy
+  ariaLabelledBy = undefined
 }) => {
   const [innerIndex, setInnerIndex] = useState(initialActiveIndex);
   const current = Math.min(Math.max(0, activeIndex ?? innerIndex), Math.max(0, items.length - 1));
