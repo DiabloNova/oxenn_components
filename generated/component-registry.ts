@@ -65,6 +65,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "text-loop",
+    "href": "/components/text-loop",
+    "title": "Text Loop",
+    "icon": "Sparkles",
+    "order": 75,
+    "navigation": true
+  },
+  {
     "slug": "logo-loop",
     "href": "/components/logo-loop",
     "title": "Logo Loop",
