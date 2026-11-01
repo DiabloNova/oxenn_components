@@ -233,6 +233,8 @@ pnpm dlx shadcn@latest add @react-bits/GooeyNav-JS-CSS
 
 The reusable implementation lives in `components/gooey-nav/` and is demonstrated at `/components/gooey-nav`. It supports controlled or internal active state, light/dark themes, particle tuning, hover feedback, and a CSS fallback when WebGL2 is unavailable.
 
+Use `ariaLabel` to name the navigation landmark; when a visible heading should provide the name, pass its id through `ariaLabelledBy` instead.
+
 **Implementation note:** Gooey Nav intentionally retains the official React Bits `.jsx` + `.css` source format instead of converting the upstream source to TypeScript and CSS Modules. This keeps the WebGL implementation close to its published JS/CSS registry version; its global selectors are consistently namespaced with `.gooey-nav` to avoid collisions with other components. This is a documented source-format exception, like the JS/CSS adaptation already described for Glass Surface.
 
 ```tsx
@@ -242,6 +244,7 @@ import GooeyNav from "@/components/gooey-nav/GooeyNav";
   items={[{ label: "Home", href: "/" }, { label: "Work", href: "/work" }]}
   initialActiveIndex={0}
   theme="light"
+  ariaLabel="Primary navigation"
   onChange={(index, item) => console.log(index, item.label)}
 />
 ```
