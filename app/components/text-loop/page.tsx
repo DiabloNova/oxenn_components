@@ -58,10 +58,10 @@ export default function TextLoopPage() {
             pauseOnHover
             outlineWidth={1.5}
           />
-          <span className={styles.stageHint}>HOVER TO PAUSE · DRAG TO CONTROL</span>
+          <span className={styles.stageHint}>HOVER TO PAUSE{draggable ? ' · DRAG TO CONTROL' : ''}</span>
         </div>
         <div className={styles.toolbar}>
-          <div className={styles.shapeControls} aria-label="Text path shape">
+          <div className={styles.shapeControls} role="group" aria-label="Text path shape">
             {(['line', 'wave', 'arch', 'circle', 'infinity'] as const).map((item) => (
               <button key={item} type="button" className={shape === item ? styles.active : ''} aria-pressed={shape === item} onClick={() => setShape(item)}>
                 {item}
@@ -69,8 +69,8 @@ export default function TextLoopPage() {
             ))}
           </div>
           <div className={styles.toggles}>
-            <button type="button" className={ribbon ? styles.active : ''} aria-pressed={ribbon} onClick={() => setRibbon((value) => !value)}>Ribbon {ribbon ? 'on' : 'off'}</button>
-            <button type="button" className={draggable ? styles.active : ''} aria-pressed={draggable} onClick={() => setDraggable((value) => !value)}><Repeat2 size={14} /> Drag {draggable ? 'on' : 'off'}</button>
+            <button type="button" className={ribbon ? styles.active : ''} aria-pressed={ribbon} onClick={() => setRibbon((value) => !value)}>Ribbon</button>
+            <button type="button" className={draggable ? styles.active : ''} aria-pressed={draggable} onClick={() => setDraggable((value) => !value)}><Repeat2 size={14} /> Drag</button>
           </div>
         </div>
       </section>
