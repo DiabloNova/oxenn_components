@@ -21,6 +21,7 @@ const MAX_FLING = 2600;
 
 type Shape = 'line' | 'wave' | 'arch' | 'circle' | 'infinity';
 type Direction = 'forward' | 'reverse';
+type HexColor = `#${string}`;
 
 export interface TextLoopProps {
   text?: string;
@@ -37,12 +38,14 @@ export interface TextLoopProps {
   uppercase?: boolean;
   color?: string;
   ribbon?: boolean;
-  ribbonColor?: string;
+  /** A 3- or 6-digit hexadecimal color (#RGB or #RRGGBB). */
+  ribbonColor?: HexColor;
   ribbonWidth?: number;
   edgeFade?: number;
   pauseOnHover?: boolean;
   cross?: boolean;
-  crossColor?: string;
+  /** A 3- or 6-digit hexadecimal color (#RGB or #RRGGBB). */
+  crossColor?: HexColor;
   crossAngle?: number;
   draggable?: boolean;
   scrollBoost?: number;
@@ -74,7 +77,8 @@ function buildPath(shape: Shape, curviness: number, ribbonWidth: number, mirrore
       return `M ${CX - r} ${CY} A ${r} ${r} 0 1 1 ${CX + r} ${CY} A ${r} ${r} 0 1 1 ${CX - r} ${CY} Z`;
     }
     case 'infinity': {
-      const r = 150 + c * 1.4;
+      const maxRadius = Math.max(0, CX - Math.max(0, ribbonWidth) / 2 - EDGE_PAD);
+      const r = Math.min(150 + c * 1.4, maxRadius);
       const h = Math.min(60 + c * 0.95, room);
       return [
         `M ${CX} ${CY}`,
@@ -161,6 +165,8 @@ export default function TextLoop({
   const crossHeadRef = useRef<SVGTextPathElement>(null);
   const crossTailRef = useRef<SVGTextPathElement>(null);
   const progressRef = useRef(0);
+  const hoverRef = useRef({ scale: 1 });
+  const hoveredRef = useRef(false);
   const [metrics, setMetrics] = useState<Metrics>({ length: 0, reps: 1, crossLength: 0, crossReps: 1 });
 
   const rawId = useId();
@@ -258,7 +264,7 @@ export default function TextLoop({
     const reduced = Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
     const sign = direction === 'reverse' ? -1 : 1;
     const base = reduced ? 0 : Math.max(0, speed) * sign;
-    const hover = { scale: 1 };
+    const hover = hoverRef.current;
     const angle = (mainAngle * Math.PI) / 180;
     const circular = !customPath && shape === 'circle';
     const radius = Math.min(90 + Math.max(0, curviness) * 0.95, Math.max(20, CY - Math.max(0, ribbonWidth) / 2 - EDGE_PAD));
@@ -309,9 +315,14 @@ export default function TextLoop({
         overwrite: true,
       });
     const onEnter = (event: PointerEvent) => {
-      if (event.pointerType !== 'touch') glide(true);
+      if (event.pointerType === 'touch') return;
+      hoveredRef.current = true;
+      glide(true);
     };
-    const onLeave = () => glide(false);
+    const onLeave = () => {
+      hoveredRef.current = false;
+      glide(false);
+    };
     const onDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       dragging = true;
@@ -375,6 +386,12 @@ export default function TextLoop({
     if (pauseOnHover) {
       root.addEventListener('pointerenter', onEnter);
       root.addEventListener('pointerleave', onLeave);
+      const pointerIsInside = hoveredRef.current || root.matches(':hover');
+      hoveredRef.current = pointerIsInside;
+      if (pointerIsInside) glide(true);
+    } else {
+      hoveredRef.current = false;
+      hover.scale = 1;
     }
     if (draggable) {
       root.addEventListener('pointerdown', onDown);
