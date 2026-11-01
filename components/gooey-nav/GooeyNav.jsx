@@ -372,7 +372,7 @@ const GooeyNav = ({
         const endY = blob.y - blob.ty;
         const r = blob.r;
         parts.push(
-          `M${blob.x + nx * r},${blob.y + ny * r}L${endX + nx * r},${endY + ny * r}A${r},${r} 0 0 1 ${endX - nx * r},${endY - ny * r}L${blob.x - nx * r},${blob.y - ny * r}A${r},${r} 0 0 1 ${blob.x + nx * r},${blob.y + ny * r}Z`
+          `M${blob.x + nx * r},${blob.y + ny * r}L${endX + nx * r},${endY + ny * r}A${r},${r} 0 0 0 ${endX - nx * r},${endY - ny * r}L${blob.x - nx * r},${blob.y - ny * r}A${r},${r} 0 0 0 ${blob.x + nx * r},${blob.y + ny * r}Z`
         );
       }
 
