@@ -524,6 +524,13 @@ const createEngine = (root, track, config, setLayout) => {
     st.last = now;
     const P = st.period;
     let busy = false;
+    if (st.reduced) {
+      st.velocity = 0;
+      st.glide = false;
+      st.scrollVel = 0;
+      st.move = null;
+      st.seek = null;
+    }
     if (st.introStart === -1 && !st.introDone && st.visible) {
       if (cfg.intro && !st.reduced) {
         st.introStart = now;
@@ -716,7 +723,12 @@ const createEngine = (root, track, config, setLayout) => {
       const [t1, a1] = s[s.length - 1];
       if (t1 > t0 && now - t1 < 80) v = clamp((-(a1 - a0) / (t1 - t0)) * 1000 * d.scale, -MAX_FLING, MAX_FLING);
     }
-    if (cfg.step && !st.reduced) {
+    if (st.reduced) {
+      st.velocity = 0;
+      st.glide = false;
+      st.move = null;
+      st.seek = null;
+    } else if (cfg.step) {
       const target = nearestSnap(st.offset + v * 0.35);
       startMove(target, clamp(0.3 + Math.abs(target - st.offset) / 1800, 0.3, 0.8));
       st.velocity = 0;
@@ -752,7 +764,14 @@ const createEngine = (root, track, config, setLayout) => {
       const comfortable = st.geo.mode === 'orbit' ? 1 : Math.max(0, st.length / 2 - it.size);
       if (Math.abs(u) > comfortable) {
         st.move = null;
-        st.seek = { from: st.offset, delta: u, t: 0, dur: clamp(0.35 + Math.abs(u) / 2000, 0.35, 0.8) };
+        if (st.reduced) {
+          st.seek = null;
+          st.offset += u;
+          st.velocity = 0;
+          st.glide = false;
+        } else {
+          st.seek = { from: st.offset, delta: u, t: 0, dur: clamp(0.35 + Math.abs(u) / 2000, 0.35, 0.8) };
+        }
       }
     }
     wake();
@@ -785,6 +804,13 @@ const createEngine = (root, track, config, setLayout) => {
 
   const onMotion = () => {
     st.reduced = !!query?.matches;
+    if (st.reduced) {
+      st.velocity = 0;
+      st.glide = false;
+      st.scrollVel = 0;
+      st.move = null;
+      st.seek = null;
+    }
     wake();
   };
 
@@ -983,6 +1009,7 @@ export const LogoLoop = memo(
                     {item.node}
                   </span>
                 ) : (
+                  // eslint-disable-next-line @next/next/no-img-element -- LogoLoop accepts caller-supplied local or remote logo URLs.
                   <img
                     src={item.src}
                     srcSet={item.srcSet}
