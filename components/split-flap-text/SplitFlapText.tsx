@@ -50,7 +50,9 @@ export type SplitFlapTextProps = Omit<HTMLAttributes<HTMLDivElement>, 'style'> &
 const toCssUnit = (value: number | string) => (typeof value === 'number' ? `${value}px` : value);
 
 const resolveCharset = (charset: string) =>
-  CHARSETS[charset] ?? (charset.length > 0 ? charset : CHARSETS.alphanumeric);
+  Object.prototype.hasOwnProperty.call(CHARSETS, charset)
+    ? CHARSETS[charset]
+    : (charset.length > 0 ? charset : CHARSETS.alphanumeric);
 
 const normalizePhrase = (phrase: string, width: number, align: Alignment = 'left') => {
   const safe = String(phrase ?? '').slice(0, width);
@@ -148,10 +150,12 @@ export default function SplitFlapText({
   const phrasesRef = useRef<string[] | null>(null);
 
   const sourceWords = Array.isArray(words) && words.length > 0 ? words : DEFAULT_WORDS;
-  const phrasesKey = typeof text === 'string'
-    ? text
-    : sourceWords.map((word) => String(word ?? '')).join('\u001f');
-  const phrases = useMemo(() => phrasesKey.split('\u001f'), [phrasesKey]);
+  const phrases = useMemo(
+    () => typeof text === 'string'
+      ? [text]
+      : sourceWords.map((word) => String(word ?? '')),
+    [text, sourceWords]
+  );
 
   const width = useMemo(() => {
     const longest = phrases.reduce((max, phrase) => Math.max(max, phrase.length), 1);
@@ -187,7 +191,7 @@ export default function SplitFlapText({
 
   useEffect(() => {
     let cancelled = false;
-    let timer: ReturnType<typeof window.setTimeout> | null = null;
+    let timer: number | null = null;
 
     const stopFrame = () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
