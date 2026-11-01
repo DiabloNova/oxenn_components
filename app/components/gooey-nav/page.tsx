@@ -7,10 +7,10 @@ import GooeyNav from "@/components/gooey-nav/GooeyNav";
 import styles from "./page.module.css";
 
 const items = [
-  { label: "Home", href: "#home" },
-  { label: "Work", href: "#work" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "#" },
+  { label: "Work", href: "#" },
+  { label: "About", href: "#" },
+  { label: "Contact", href: "#" },
 ];
 
 export default function GooeyNavPage() {
@@ -69,7 +69,8 @@ export default function GooeyNavPage() {
               gooeyness={0.5}
               wobble={0.5}
               hoverEffect
-              onChange={(_index, item) => setActiveItem(item.label)}
+              ariaLabel="Gooey navigation demo"
+              onChange={(_index: number, item: (typeof items)[number]) => setActiveItem(item.label)}
             />
           </div>
           <div className={styles.selection}>
