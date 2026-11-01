@@ -154,11 +154,15 @@ const parseColor = (value, fallback) => {
   try {
     const ctx = document.createElement('canvas').getContext('2d');
     if (!ctx) return fallback;
-    const sentinel = '#010203';
-    ctx.fillStyle = sentinel;
+    const firstSentinel = '#010203';
+    const secondSentinel = '#040506';
+    ctx.fillStyle = firstSentinel;
+    ctx.fillStyle = value;
+    const firstResult = ctx.fillStyle;
+    ctx.fillStyle = secondSentinel;
     ctx.fillStyle = value;
     const resolved = ctx.fillStyle;
-    if (resolved === sentinel) return fallback;
+    if (firstResult !== resolved) return fallback;
     if (resolved.startsWith('#')) {
       const n = parseInt(resolved.slice(1), 16);
       return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
@@ -730,6 +734,12 @@ const Lanyard = ({
   const containerRef = useRef(null);
   const settingsRef = useRef(null);
   const applyRef = useRef(null);
+  const flipRef = useRef(null);
+  const handleKeyDown = event => {
+    if (!interactive || event.repeat || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    flipRef.current?.();
+  };
 
   settingsRef.current = {
     frontImage,
@@ -1194,6 +1204,10 @@ const Lanyard = ({
       sim.turn = sim.turn === 0 ? Math.PI * direction : 0;
       body.angular.addScaledVector(up, FLIP_SPIN * direction);
     };
+    flipRef.current = () => {
+      flip(sim.body.position.clone());
+      start();
+    };
 
     const onPointerDown = event => {
       if (!settingsRef.current.interactive || event.button > 0) return;
@@ -1244,20 +1258,12 @@ const Lanyard = ({
       if (pickCard()) event.preventDefault();
     };
 
-    const onKeyboardFlip = event => {
-      if (!settingsRef.current.interactive || event.repeat || (event.key !== 'Enter' && event.key !== ' ')) return;
-      event.preventDefault();
-      flip(sim.body.position.clone());
-      start();
-    };
-
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
     canvas.addEventListener('pointercancel', onPointerUp);
     canvas.addEventListener('lostpointercapture', onPointerUp);
     canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-    container.addEventListener('keydown', onKeyboardFlip);
 
     const resize = () => {
       view.width = Math.max(1, container.clientWidth);
@@ -1296,7 +1302,7 @@ const Lanyard = ({
       canvas.removeEventListener('pointercancel', onPointerUp);
       canvas.removeEventListener('lostpointercapture', onPointerUp);
       canvas.removeEventListener('touchstart', onTouchStart);
-      container.removeEventListener('keydown', onKeyboardFlip);
+      flipRef.current = null;
       [bodyMesh, frontMesh, backMesh, ring, clampMesh, eyelet, band].forEach(mesh => mesh.geometry?.dispose());
       [frontMaterial, backMaterial, edgeMaterial, metalMaterial, bandMaterial].forEach(material => material.dispose());
       [frontTexture, backTexture, strapTexture, grain, weave].forEach(texture => texture.dispose());
@@ -1316,6 +1322,7 @@ const Lanyard = ({
       tabIndex={interactive ? 0 : -1}
       aria-label="Interactive identity badge. Press Enter or Space to flip between the front and back. Pointer users can drag the badge."
       aria-keyshortcuts="Enter Space"
+      onKeyDown={handleKeyDown}
     />
   );
 };
