@@ -69,32 +69,32 @@ function buildPath(shape: Shape, curviness: number, ribbonWidth: number, mirrore
       if (mirrored) {
         const rx = r * 1.22;
         const ry = r * 0.42;
-        return \`M \${CX - rx} \${CY} A \${rx} \${ry} 0 1 1 \${CX + rx} \${CY} A \${rx} \${ry} 0 1 1 \${CX - rx} \${CY} Z\`;
+        return `M ${CX - rx} ${CY} A ${rx} ${ry} 0 1 1 ${CX + rx} ${CY} A ${rx} ${ry} 0 1 1 ${CX - rx} ${CY} Z`;
       }
-      return \`M \${CX - r} \${CY} A \${r} \${r} 0 1 1 \${CX + r} \${CY} A \${r} \${r} 0 1 1 \${CX - r} \${CY} Z\`;
+      return `M ${CX - r} ${CY} A ${r} ${r} 0 1 1 ${CX + r} ${CY} A ${r} ${r} 0 1 1 ${CX - r} ${CY} Z`;
     }
     case 'infinity': {
       const r = 150 + c * 1.4;
       const h = Math.min(60 + c * 0.95, room);
       return [
-        \`M \${CX} \${CY}\`,
-        \`C \${CX + r * 0.55} \${CY - h} \${CX + r} \${CY - h} \${CX + r} \${CY}\`,
-        \`C \${CX + r} \${CY + h} \${CX + r * 0.55} \${CY + h} \${CX} \${CY}\`,
-        \`C \${CX - r * 0.55} \${CY - h} \${CX - r} \${CY - h} \${CX - r} \${CY}\`,
-        \`C \${CX - r} \${CY + h} \${CX - r * 0.55} \${CY + h} \${CX} \${CY}\`,
+        `M ${CX} ${CY}`,
+        `C ${CX + r * 0.55} ${CY - h} ${CX + r} ${CY - h} ${CX + r} ${CY}`,
+        `C ${CX + r} ${CY + h} ${CX + r * 0.55} ${CY + h} ${CX} ${CY}`,
+        `C ${CX - r * 0.55} ${CY - h} ${CX - r} ${CY - h} ${CX - r} ${CY}`,
+        `C ${CX - r} ${CY + h} ${CX - r * 0.55} ${CY + h} ${CX} ${CY}`,
         'Z',
       ].join(' ');
     }
     case 'arch': {
       const rise = Math.min(120 + c * 1.1, room * 2) * flip;
-      return \`M 120 \${CY + rise / 2} Q \${CX} \${CY - rise * 1.5} \${VIEW_W - 120} \${CY + rise / 2}\`;
+      return `M 120 ${CY + rise / 2} Q ${CX} ${CY - rise * 1.5} ${VIEW_W - 120} ${CY + rise / 2}`;
     }
     case 'line':
-      return \`M -320 \${CY} L \${VIEW_W + 320} \${CY}\`;
+      return `M -320 ${CY} L ${VIEW_W + 320} ${CY}`;
     case 'wave':
     default: {
       const amplitude = Math.min(c * 2.2, room * 2) * flip;
-      return \`M -320 \${CY} Q -160 \${CY - amplitude} 0 \${CY} T 320 \${CY} T 640 \${CY} T 960 \${CY} T 1280 \${CY} T \${VIEW_W + 320} \${CY}\`;
+      return `M -320 ${CY} Q -160 ${CY - amplitude} 0 ${CY} T 320 ${CY} T 640 ${CY} T 960 ${CY} T 1280 ${CY} T ${VIEW_W + 320} ${CY}`;
     }
   }
 }
@@ -109,7 +109,7 @@ function parseHex(value: string) {
 function tint(color: string, amount: number) {
   const rgb = parseHex(color);
   if (!rgb) return color;
-  return \`#\${rgb.map((channel) => Math.round(channel + (255 - channel) * amount).toString(16).padStart(2, '0')).join('')}\`;
+  return `#${rgb.map((channel) => Math.round(channel + (255 - channel) * amount).toString(16).padStart(2, '0')).join('')}`;
 }
 
 function inkOn(color: string) {
@@ -164,10 +164,10 @@ export default function TextLoop({
   const [metrics, setMetrics] = useState<Metrics>({ length: 0, reps: 1, crossLength: 0, crossReps: 1 });
 
   const rawId = useId();
-  const pathId = \`text-loop-\${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}\`;
-  const crossId = \`\${pathId}-cross\`;
-  const fadeId = \`\${pathId}-fade\`;
-  const maskId = \`\${pathId}-mask\`;
+  const pathId = `text-loop-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const crossId = `${pathId}-cross`;
+  const fadeId = `${pathId}-fade`;
+  const maskId = `${pathId}-mask`;
   const customPath = Boolean(path);
   const d = useMemo(() => path || buildPath(shape, curviness, ribbonWidth), [path, shape, curviness, ribbonWidth]);
   const crossD = useMemo(
@@ -176,16 +176,16 @@ export default function TextLoop({
   );
   const unit = useMemo(() => {
     const base = uppercase ? String(text).toUpperCase() : String(text);
-    return \`\${base}\${separator ? \`\\u00A0\${separator}\\u00A0\` : '\\u00A0\\u00A0\\u00A0'}\`;
+    return `${base}${separator ? `\u00A0${separator}\u00A0` : '\u00A0\u00A0\u00A0'}`;
   }, [text, separator, uppercase]);
   const textStyle = useMemo<CSSProperties>(
-    () => ({ fontSize: \`\${fontSize}px\`, fontWeight, letterSpacing: \`\${letterSpacing}px\` }),
+    () => ({ fontSize: `${fontSize}px`, fontWeight, letterSpacing: `${letterSpacing}px` }),
     [fontSize, fontWeight, letterSpacing],
   );
   const mainAngle = tilt + (cross ? crossAngle / 2 : 0);
   const secondaryAngle = tilt - (cross ? crossAngle / 2 : 0);
-  const mainTransform = mainAngle ? \`rotate(\${mainAngle} \${CX} \${CY})\` : undefined;
-  const secondaryTransform = secondaryAngle ? \`rotate(\${secondaryAngle} \${CX} \${CY})\` : undefined;
+  const mainTransform = mainAngle ? `rotate(${mainAngle} ${CX} ${CY})` : undefined;
+  const secondaryTransform = secondaryAngle ? `rotate(${secondaryAngle} ${CX} ${CY})` : undefined;
   const crossTape = crossColor || tint(ribbonColor, 0.62);
   const fill = color || (ribbon ? '#ffffff' : 'currentColor');
   const secondaryFill = ribbon ? inkOn(crossTape) : crossColor || 'currentColor';
@@ -415,13 +415,13 @@ export default function TextLoop({
   return (
     <div
       ref={rootRef}
-      className={[\` \${styles.root}\`, draggable ? styles.draggable : '', className].filter(Boolean).join(' ')}
+      className={[styles.root, draggable ? styles.draggable : '', className].filter(Boolean).join(' ')}
       style={style}
     >
       <svg
         ref={svgRef}
         className={styles.svg}
-        viewBox={\`0 0 \${VIEW_W} \${VIEW_H}\`}
+        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={text}
@@ -434,18 +434,18 @@ export default function TextLoop({
                   <stop key={index} offset={stop * fadeWidth} stopColor="#fff" stopOpacity={stop * stop * (3 - 2 * stop)} />
                 ))}
                 {fadeStops.slice().reverse().map((stop, index) => (
-                  <stop key={\`end-\${index}\`} offset={1 - stop * fadeWidth} stopColor="#fff" stopOpacity={stop * stop * (3 - 2 * stop)} />
+                  <stop key={`end-${index}`} offset={1 - stop * fadeWidth} stopColor="#fff" stopOpacity={stop * stop * (3 - 2 * stop)} />
                 ))}
               </linearGradient>
               <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width={VIEW_W} height={VIEW_H}>
-                <rect width={VIEW_W} height={VIEW_H} fill={\`url(#\${fadeId})\`} />
+                <rect width={VIEW_W} height={VIEW_H} fill={`url(#${fadeId})`} />
               </mask>
             </>
           )}
         </defs>
 
         <text ref={measureRef} className={styles.measure} style={textStyle} aria-hidden="true">{unit}</text>
-        <g mask={fadeWidth > 0 ? \`url(#\${maskId})\` : undefined}>
+        <g mask={fadeWidth > 0 ? `url(#${maskId})` : undefined}>
           {cross && (
             <g transform={secondaryTransform}>
               <path
@@ -459,10 +459,10 @@ export default function TextLoop({
                 strokeLinejoin="round"
               />
               <text className={styles.text} style={textStyle} {...crossPaint} dominantBaseline="central" aria-hidden="true" textLength={metrics.crossLength || undefined} lengthAdjust="spacing">
-                <textPath ref={crossHeadRef} href={\`#\${crossId}\`} startOffset={0}>{crossText}</textPath>
+                <textPath ref={crossHeadRef} href={`#${crossId}`} startOffset={0}>{crossText}</textPath>
               </text>
               <text className={styles.text} style={textStyle} {...crossPaint} dominantBaseline="central" aria-hidden="true" textLength={metrics.crossLength || undefined} lengthAdjust="spacing">
-                <textPath ref={crossTailRef} href={\`#\${crossId}\`} startOffset={0}>{crossText}</textPath>
+                <textPath ref={crossTailRef} href={`#${crossId}`} startOffset={0}>{crossText}</textPath>
               </text>
             </g>
           )}
@@ -478,10 +478,10 @@ export default function TextLoop({
               strokeLinejoin="round"
             />
             <text className={styles.text} style={textStyle} {...mainPaint} dominantBaseline="central" aria-hidden="true" textLength={metrics.length || undefined} lengthAdjust="spacing">
-              <textPath ref={headRef} href={\`#\${pathId}\`} startOffset={0}>{loopText}</textPath>
+              <textPath ref={headRef} href={`#${pathId}`} startOffset={0}>{loopText}</textPath>
             </text>
             <text className={styles.text} style={textStyle} {...mainPaint} dominantBaseline="central" aria-hidden="true" textLength={metrics.length || undefined} lengthAdjust="spacing">
-              <textPath ref={tailRef} href={\`#\${pathId}\`} startOffset={0}>{loopText}</textPath>
+              <textPath ref={tailRef} href={`#${pathId}`} startOffset={0}>{loopText}</textPath>
             </text>
           </g>
         </g>
