@@ -9,7 +9,7 @@ const INTRO_MS = 1600;
 const RIPPLE_LIFE = 1.6;
 const MAX_CLICKS = 4;
 
-const vertex = \`#version 300 es
+const vertex = `#version 300 es
 in vec2 position;
 in vec2 uv;
 out vec2 vUv;
@@ -17,9 +17,9 @@ void main() {
   vUv = uv;
   gl_Position = vec4(position, 0.0, 1.0);
 }
-\`;
+`;
 
-const fragment = \`#version 300 es
+const fragment = `#version 300 es
 precision highp float;
 uniform sampler2D uTextTexture;
 uniform vec2 uResolution;
@@ -147,9 +147,9 @@ void main() {
   color = min(color + (lens + shockLight * 0.5) * cover.g * 0.055, vec3(a));
   fragColor = vec4(color, a) * uReveal;
 }
-\`;
+`;
 
-const getFontValue = value => (typeof value === 'number' ? \`\${value}px\` : value);
+const getFontValue = value => (typeof value === 'number' ? `${value}px` : value);
 const smooth = value => value * value * (3 - 2 * value);
 
 const getLuminance = color => {
@@ -222,8 +222,8 @@ const buildTextCanvas = ({ container, width, height, dpr, props }) => {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  const lines = String(props.text || '').split('\\n');
-  const applyFont = () => { ctx.font = \`\${fontWeight} \${fontSizePx}px \${fontFamily}\`; };
+  const lines = String(props.text || '').split('\n');
+  const applyFont = () => { ctx.font = `${fontWeight} ${fontSizePx}px ${fontFamily}`; };
   applyFont();
   const maxWidth = width * 0.86;
   const maxHeight = height * 0.78;
@@ -557,7 +557,7 @@ const WarpText = ({
   return (
     <div
       ref={containerRef}
-      className={\`warp-text \${className}\`.trim()}
+      className={`warp-text ${className}`.trim()}
       style={style}
       role="img"
       aria-label={text}
