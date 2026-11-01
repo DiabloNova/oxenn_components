@@ -379,7 +379,7 @@ const GooeyNav = ({
       return parts.join('');
     };
 
-    const pill    const pill = index => {
+    const pill = index => {
       if (!pills.has(index)) pills.set(index, { mass: 0, scale: 0, velocity: 0, outgoing: 0 });
       return pills.get(index);
     };
