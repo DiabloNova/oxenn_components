@@ -1,7 +1,7 @@
 .page {
   --bg: #f5f7fb;
   --fg: #172033;
-  --muted: #68758b;
+  --muted: #5f6b82;
   --soft: #52617a;
   --accent: #6558e8;
   --border: rgba(32, 45, 72, .12);
@@ -80,7 +80,6 @@
   .details { grid-template-columns:1fr; gap:14px; }
 }
 @media (max-width:420px) {
-  .navWrap { transform:scale(.86); transform-origin:center; }
   .themeButton span { display:none; }
 }
 @media (prefers-reduced-motion:reduce) {
