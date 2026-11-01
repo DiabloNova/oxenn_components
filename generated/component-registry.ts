@@ -41,6 +41,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "split-flap-text",
+    "href": "/components/split-flap-text",
+    "title": "Split Flap Text",
+    "icon": "Clapperboard",
+    "order": 70,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",
