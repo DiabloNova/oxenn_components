@@ -221,3 +221,22 @@ npm run build
 ## License
 
 MIT
+
+
+## Reflective Card
+
+The component source is based on the official [React Bits ReflectiveCard JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/ReflectiveCard-JS-CSS.json). To install it in a compatible shadcn setup:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/ReflectiveCard-JS-CSS
+```
+
+The locally maintained implementation lives in `components/reflective-card/` and is demonstrated at `/components/reflective-card`. It uses this repository's existing `lucide-react` dependency for the verification and fingerprint icons, avoiding an additional Hugeicons runtime dependency. The card uses WebGL2 for its reflective plate and keeps its CSS-backed card surface in place when WebGL2 is unavailable.
+
+```tsx
+import ReflectiveCard from "@/components/reflective-card/ReflectiveCard";
+
+<ReflectiveCard name="DiabloNova" role="Senior Developer" videoSrc="/videos/reflection.mp4" webcam={false} tint="#ffffff" metalness={1} roughness={0.3} blurStrength={6} shine={1} glare={0.5} grayscale={1} warp={0.6} warpScale={1} bevel={3} tiltStrength={12} radius={24} enableTilt intro theme="light" />
+```
+
+Pass `children` to replace the default identity layout. Camera capture is opt-in through `webcam`; camera permission failures can be observed with `onWebcamError`. The component respects `prefers-reduced-motion`, pauses media when off-screen, and releases its WebGL and camera resources on unmount.

@@ -33,6 +33,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "reflective-card",
+    "href": "/components/reflective-card",
+    "title": "Reflective Card",
+    "icon": "BadgeCheck",
+    "order": 45,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",
