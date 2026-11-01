@@ -31,7 +31,9 @@
 .controlHead button { display: flex; align-items: center; gap: 6px; align-self: flex-start; border: 1px solid #ffffff25; border-radius: 8px; padding: 6px 9px; background: transparent; color: #dce5ef; font-size: 10px; }
 .controls label { display: flex; flex-direction: column; gap: 9px; color: #c3ccda; font-size: 10px; }
 .controls output { color: #a9c7e7; }
+.controlLabelRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .controls input[type="range"] { width: 100%; accent-color: #a9c7e7; }
+.controls button:disabled, .controls input:disabled { cursor: not-allowed; opacity: 0.45; }
 .controls .toggle { flex-direction: row; align-items: center; white-space: nowrap; }
 .usage { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 45px; align-items: center; padding: 80px 0 60px; }
 .usage h2 { font-size: clamp(36px, 5vw, 58px); line-height: 0.92; letter-spacing: -0.07em; }
