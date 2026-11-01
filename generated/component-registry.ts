@@ -33,6 +33,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "branched-menu",
+    "href": "/components/branched-menu",
+    "title": "Branched Menu",
+    "icon": "GitBranch",
+    "order": 50,
+    "navigation": true
+  },
+  {
     "slug": "option-wheel",
     "href": "/components/option-wheel",
     "title": "Option Wheel",
