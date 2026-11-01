@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   ArrowUpRight,
+  Bell,
   BookOpen,
   Braces,
   Download,
@@ -33,7 +34,7 @@ const MENU_ITEMS = [
       { value: 'buttons', label: 'Buttons', icon: <Braces size={16} strokeWidth={1.8} /> },
       { value: 'typography', label: 'Typography', icon: <BookOpen size={16} strokeWidth={1.8} /> },
       { value: 'overlays', label: 'Overlays', icon: <Layers size={16} strokeWidth={1.8} /> },
-      { value: 'toasts', label: 'Toasts' },
+      { value: 'toasts', label: 'Toasts', icon: <Bell size={16} strokeWidth={1.8} /> },
     ],
   },
 ];
