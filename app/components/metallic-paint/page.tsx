@@ -16,7 +16,13 @@ export default function MetallicPaintPage() {
 
   useEffect(() => {
     const probe = document.createElement("canvas");
-    setWebglAvailable(Boolean(probe.getContext("webgl2")));
+    const context = probe.getContext("webgl2");
+    const supported = Boolean(context);
+    setWebglAvailable(supported);
+
+    if (context) {
+      context.getExtension("WEBGL_lose_context")?.loseContext();
+    }
   }, []);
 
   const reset = () => {
@@ -122,20 +128,27 @@ export default function MetallicPaintPage() {
           </p>
         )}
 
-        <section className={styles.controls} aria-label="Metallic paint controls">
+        <section
+          className={styles.controls}
+          aria-label="Metallic paint controls"
+          aria-disabled={webglAvailable !== true}
+        >
           <div className={styles.controlHead}>
             <div>
               <strong>Shader controls</strong>
               <small>Changes update both live previews</small>
             </div>
-            <button type="button" onClick={reset}>
+            <button type="button" onClick={reset} disabled={webglAvailable !== true}>
               <RotateCcw size={13} /> Reset
             </button>
           </div>
           <label>
-            Flow speed <output>{speed.toFixed(1)}×</output>
+            <span className={styles.controlLabelRow}>
+              Flow speed <output>{speed.toFixed(1)}×</output>
+            </span>
             <input
               type="range"
+              disabled={webglAvailable !== true}
               min="0"
               max="2"
               step=".1"
@@ -144,9 +157,12 @@ export default function MetallicPaintPage() {
             />
           </label>
           <label>
-            Reflection density <output>{density.toFixed(1)}</output>
+            <span className={styles.controlLabelRow}>
+              Reflection density <output>{density.toFixed(1)}</output>
+            </span>
             <input
               type="range"
+              disabled={webglAvailable !== true}
               min=".5"
               max="8"
               step=".5"
@@ -155,9 +171,12 @@ export default function MetallicPaintPage() {
             />
           </label>
           <label>
-            Color dispersion <output>{dispersion.toFixed(2)}</output>
+            <span className={styles.controlLabelRow}>
+              Color dispersion <output>{dispersion.toFixed(2)}</output>
+            </span>
             <input
               type="range"
+              disabled={webglAvailable !== true}
               min="0"
               max="1"
               step=".05"
@@ -168,6 +187,7 @@ export default function MetallicPaintPage() {
           <label className={styles.toggle}>
             <input
               type="checkbox"
+              disabled={webglAvailable !== true}
               checked={lightMode}
               onChange={event => setLightMode(event.target.checked)}
             />
