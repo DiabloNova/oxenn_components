@@ -25,6 +25,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "metallic-paint",
+    "href": "/components/metallic-paint",
+    "title": "Metallic Paint",
+    "icon": "Sparkles",
+    "order": 31,
+    "navigation": true
+  },
+  {
     "slug": "topography",
     "href": "/components/topography",
     "title": "Topography",
