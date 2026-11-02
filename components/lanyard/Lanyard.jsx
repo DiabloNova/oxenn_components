@@ -1318,11 +1318,15 @@ const Lanyard = ({
       ref={containerRef}
       className={`${styles.lanyard} ${className}`.trim()}
       style={style}
-      role="button"
-      tabIndex={interactive ? 0 : -1}
-      aria-label="Interactive identity badge. Press Enter or Space to flip between the front and back. Pointer users can drag the badge."
-      aria-keyshortcuts="Enter Space"
-      onKeyDown={handleKeyDown}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label={
+        interactive
+          ? 'Interactive identity badge. Press Enter or Space to flip between the front and back. Pointer users can drag the badge.'
+          : undefined
+      }
+      aria-keyshortcuts={interactive ? 'Enter Space' : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
     />
   );
 };
