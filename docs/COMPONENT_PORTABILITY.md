@@ -157,6 +157,7 @@ These examples illustrate why the contract is necessary; they are not blanket ap
 | FloatingBottomNav | React client component, `lucide-react`, local CSS Module | Good isolation pattern. Verify icon exports against Oxenn's installed Lucide version. |
 | Sidebar | React client component, `lucide-react`, local CSS Module | Good styling boundary. Product-specific navigation/data must continue to be injected through props. |
 | FluidGlass | React client component, local regular CSS, WebGL2 and browser observers | Requires a client boundary and browser-capability/fallback testing. Keep its CSS selectors namespaced. |
+| TextLoop | React client component, GSAP ticker, SVG text paths, local CSS Module | Requires `gsap` in the consuming app (source app declares `^3.13.0`); do not copy the source app manifest wholesale. Verify ticker cleanup, reduced-motion behavior, pointer capture, and SVG text measurement in the consumer build. |
 | OptionWheel | React client component, React hooks, relative regular CSS, pointer/wheel/keyboard handlers, optional audio URL | Merged into `main`. Its current regular CSS import must be converted to a CSS Module (or moved to a documented `src/app/` global stylesheet import) before subtree integration. It still needs a build/render test inside the actual Oxenn app before product use. |
 
 ## 8. Consumer-side acceptance checklist
