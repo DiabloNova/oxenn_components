@@ -28,7 +28,24 @@
 .example { min-width:0; }
 .exampleHeading { padding:22px 24px 10px; }
 .exampleHeading p { margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.7; }
-.arcStage { display:flex; align-items:center; min-height:190px; padding:26px 0; }
+.arcStage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 190px;
+  padding: 26px 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  overflow: clip;
+  isolation: isolate;
+}
+.arcStage > * {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
 .verticalStage { display:flex; align-items:center; justify-content:center; height:260px; padding:0; }
 .verticalStage > * { max-width:100%; }
 .details { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:1440px; margin:30px auto 0; }
