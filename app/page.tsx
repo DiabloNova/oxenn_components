@@ -6,6 +6,7 @@ import Sidebar from "@/components/sidebar/Sidebar";
 import {
   ArrowUpRight,
   Blocks,
+  ChartLine,
   CircleCheck,
   Clapperboard,
   Command,
@@ -26,6 +27,7 @@ import styles from "./page.module.css";
 
 const navigationIcons = {
   Blocks,
+  ChartLine,
   Clapperboard,
   Disc3,
   Droplets,

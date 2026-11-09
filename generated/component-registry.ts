@@ -97,6 +97,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "charts",
+    "href": "/components/charts",
+    "title": "Area Chart",
+    "icon": "ChartLine",
+    "order": 90,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",
