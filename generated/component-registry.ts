@@ -41,6 +41,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "micro-slats",
+    "href": "/components/micro-slats",
+    "title": "Micro Slats",
+    "icon": "Waves",
+    "order": 32,
+    "navigation": true
+  },
+  {
     "slug": "topography",
     "href": "/components/topography",
     "title": "Topography",
