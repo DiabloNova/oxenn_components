@@ -43,6 +43,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
 - **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
+- **Micro Slats:** `/components/micro-slats` — a WebGL2 slat ocean with four wave presets, an OGL fluid solver, pointer splashes, and reduced-motion-aware rendering.
 - **Gradient Blinds:** `/components/gradient-blinds` — the official React Bits GradientBlinds JS/CSS source with WebGL2 satin slats, pointer spotlight, sway, and click-triggered ripples.
 - **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
@@ -115,6 +116,43 @@ import GlassSurface from "@/components/glass-surface/GlassSurface";
 ```
 
 The `backdrop` prop accepts an image, video, canvas, or React ref to one of those elements. Video backdrops update during playback; for a canvas backdrop, increment `backdropVersion` whenever its pixels change so the WebGL texture is refreshed. The `shape` prop accepts a transparent image path and derives its refractive silhouette from the image alpha channel. This repository keeps the implementation local, so the shadcn registry install command is not required here.
+
+## Micro Slats
+
+Micro Slats is a React + TypeScript adaptation of the [Vue Bits MicroSlats registry component](https://vue-bits.dev/r/MicroSlats.json). The port preserves the upstream OGL/WebGL2 wave shaders, four presets (`swell`, `tide`, `storm`, and `signal`), and Navier–Stokes-style fluid interaction. The React component lives in `components/micro-slats/` and is demonstrated at `/components/micro-slats`.
+
+Install the runtime dependency in a compatible React app:
+
+```bash
+npm install ogl
+```
+
+```tsx
+import MicroSlats from "@/components/micro-slats/MicroSlats";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <MicroSlats
+    preset="swell"
+    color="#A855F7"
+    glintColor="#ffffff"
+    backgroundColor="#120f17"
+    slatWidth={10}
+    slatHeight={25}
+    gap={3}
+    roundness={0.75}
+    interactive
+    cursorStrength={1}
+    cursorSize={40}
+    swirl={0}
+    trail={1.4}
+    lean={0}
+    intro
+    introDuration={1.5}
+  />
+</div>
+```
+
+Every wave setting can override the selected preset. The canvas is decorative and hidden from assistive technology; reduced-motion preferences disable the waves, intro, and pointer stirring. Rendering pauses when the component leaves the viewport or the document tab is hidden. The source is adapted for React and does not require Vue or the Vue Bits registry CLI.
 
 ## Gradient Waves
 

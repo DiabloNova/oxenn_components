@@ -16,7 +16,8 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run check:registry
-      - run: npm run test:registry
+      - run: npm test
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
+
