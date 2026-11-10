@@ -25,8 +25,11 @@ function createRechartsMocks() {
     PolarAngleAxis: () => null,
     PolarGrid: () => null,
     Radar: (props) =>
-      jsxRuntime.jsx("output", {
+      jsxRuntime.jsx("circle", {
         "data-animation-active": String(props.isAnimationActive),
+        cx: 0,
+        cy: 0,
+        r: 1,
       }),
     RadarChart: ({ data, children }) =>
       jsxRuntime.jsx("svg", {
@@ -43,13 +46,13 @@ function createRechartsMocks() {
 }
 
 function loadPattern({ reactModule = React, browserWindow } = {}) {
-  const module = { exports: {} };
+  const componentModule = { exports: {} };
   const recharts = createRechartsMocks();
   const styles = new Proxy({}, { get: (_target, key) => String(key) });
 
   vm.runInNewContext(compiledComponent, {
-    module,
-    exports: module.exports,
+    module: componentModule,
+    exports: componentModule.exports,
     window: browserWindow,
     require(specifier) {
       if (specifier === "react") return reactModule;
@@ -60,7 +63,7 @@ function loadPattern({ reactModule = React, browserWindow } = {}) {
     },
   });
 
-  return { Pattern: module.exports.Pattern, recharts };
+  return { Pattern: componentModule.exports.Pattern, recharts };
 }
 
 function findElement(node, type) {
