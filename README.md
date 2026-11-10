@@ -346,3 +346,33 @@ import GooeyNav from "@/components/gooey-nav/GooeyNav";
   onChange={(index, item) => console.log(index, item.label)}
 />
 ```
+
+
+## Laser Flow
+
+Laser Flow is an interactive WebGL2 light effect adapted from the official [React Bits LaserFlow JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/LaserFlow-JS-CSS.json). The reusable implementation lives in `components/laser-flow/` and its interactive showcase is available at `/components/laser-flow`.
+
+Install the upstream shadcn registry item in a compatible project with:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/LaserFlow-JS-CSS
+```
+
+Import the local implementation and attach a ref to the surface that should catch the light:
+
+```jsx
+import { useRef } from "react";
+import LaserFlow from "@/components/laser-flow/LaserFlow";
+
+export default function Hero() {
+  const surfaceRef = useRef(null);
+  return (
+    <div style={{ position: "relative", height: 600, overflow: "hidden" }}>
+      <LaserFlow surfaceRef={surfaceRef} beamPosition={0.62} color="#3847ff" />
+      <div ref={surfaceRef} style={{ position: "absolute", left: "18%", right: "28%", top: "52%", bottom: -24, borderRadius: 14, background: "#0b0b0d" }}>Your content</div>
+    </div>
+  );
+}
+```
+
+The effect requires WebGL2; browsers without WebGL2 support will not render it. Animation is suppressed when `prefers-reduced-motion: reduce` is active. Props cover beam position, color, intensity, flare, spread, spill, fog, dust, streaks, dots, pulse, speed, seed, pointer interaction, image reveal, theme, pause state, and device-pixel ratio.
