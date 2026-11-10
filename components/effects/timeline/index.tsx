@@ -1,4 +1,4 @@
-"// Built using Hyperiux Vault: https://vault.hyperiux.com
+// Built using Hyperiux Vault: https://vault.hyperiux.com
 "use client";
 import {
   type CSSProperties,
@@ -552,4 +552,3 @@ export default function Timeline({
     </ReactLenis>
   );
 }
-"
