@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useSyncExternalStore } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -11,10 +11,16 @@ import {
 } from "recharts";
 import styles from "./Chart23.module.css";
 
-type ChartDatum = {
+export interface ChartDatum {
   skill: string;
   score: number;
-};
+}
+
+export interface PatternProps {
+  data?: ChartDatum[];
+  title?: string;
+  description?: string;
+}
 
 type TooltipContentProps = {
   active?: boolean;
@@ -24,7 +30,7 @@ type TooltipContentProps = {
   }>;
 };
 
-const chartData: ChartDatum[] = [
+const DEFAULT_CHART_DATA: ChartDatum[] = [
   { skill: "Frontend", score: 92 },
   { skill: "Backend", score: 78 },
   { skill: "DevOps", score: 68 },
@@ -32,6 +38,44 @@ const chartData: ChartDatum[] = [
   { skill: "Testing", score: 85 },
   { skill: "Security", score: 62 },
 ];
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeToReducedMotion(onChange: () => void) {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return () => {};
+  }
+
+  const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", onChange);
+    return () => mediaQuery.removeEventListener("change", onChange);
+  }
+
+  mediaQuery.addListener(onChange);
+  return () => mediaQuery.removeListener(onChange);
+}
+
+function getReducedMotionSnapshot() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia(REDUCED_MOTION_QUERY).matches
+  );
+}
+
+function getServerReducedMotionSnapshot() {
+  return true;
+}
+
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getServerReducedMotionSnapshot,
+  );
+}
 
 function ChartTooltipContent({ active, payload }: TooltipContentProps) {
   const point = payload?.[0];
@@ -49,25 +93,28 @@ function ChartTooltipContent({ active, payload }: TooltipContentProps) {
   );
 }
 
-export function Pattern() {
+export function Pattern({
+  data = DEFAULT_CHART_DATA,
+  title = "Skill Assessment",
+  description = "Team proficiency across key areas",
+}: PatternProps) {
   const id = useId().replace(/:/g, "");
   const gradientId = `chart23-fill-${id}`;
   const glowId = `chart23-glow-${id}`;
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <article className={styles.card} aria-label="Skill assessment radar chart">
+    <article className={styles.card} aria-label={title}>
       <header className={styles.header}>
-        <h2 className={styles.title}>Skill Assessment</h2>
-        <p className={styles.description}>
-          Team proficiency across key areas
-        </p>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.description}>{description}</p>
       </header>
 
       <div className={styles.chart}>
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
             accessibilityLayer
-            data={chartData}
+            data={data}
             margin={{ top: 12, right: 24, bottom: 12, left: 24 }}
           >
             <defs>
@@ -81,10 +128,7 @@ export function Pattern() {
               </filter>
             </defs>
 
-            <Tooltip
-              content={<ChartTooltipContent />}
-              cursor={false}
-            />
+            <Tooltip content={<ChartTooltipContent />} cursor={false} />
             <PolarAngleAxis
               dataKey="skill"
               tick={{ fontSize: 12, fill: "var(--chart-muted)" }}
@@ -101,7 +145,7 @@ export function Pattern() {
                 fill: "var(--chart-accent)",
                 strokeWidth: 0,
               }}
-              isAnimationActive
+              isAnimationActive={!prefersReducedMotion}
             />
           </RadarChart>
         </ResponsiveContainer>
