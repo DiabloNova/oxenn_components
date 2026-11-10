@@ -84,7 +84,7 @@ export const componentRegistry = [
     "slug": "split-flap-text",
     "href": "/components/split-flap-text",
     "title": "Split Flap Text",
-    "icon": "Clapperboard",
+    "icon": "Clipboard",
     "order": 70,
     "navigation": true
   },
@@ -102,6 +102,14 @@ export const componentRegistry = [
     "title": "Logo Loop",
     "icon": "Layers3",
     "order": 80,
+    "navigation": true
+  },
+  {
+    "slug": "grid-motion",
+    "href": "/components/grid-motion",
+    "title": "Grid Motion",
+    "icon": "Grid3X3",
+    "order": 85,
     "navigation": true
   },
   {
