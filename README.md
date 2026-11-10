@@ -43,10 +43,14 @@ CI verifies that the committed registry matches the current route folders and me
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
 - **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
+- **Micro Slats:** `/components/micro-slats` — a WebGL2 slat ocean with four wave presets, an OGL fluid solver, pointer splashes, and reduced-motion-aware rendering.
+- **Gradient Blinds:** `/components/gradient-blinds` — the official React Bits GradientBlinds JS/CSS source with WebGL2 satin slats, pointer spotlight, sway, and click-triggered ripples.
 - **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
 - **Glass Surface:** `/components/glass-surface` — adaptive frosted glass, SVG displacement filters, optional WebGL2 image refraction, and transparent-image silhouette rendering.
 - **Branched Menu:** `/components/branched-menu` — animated tree navigation with expandable sections, SVG connector paths, and selection callbacks.
+- **Gooey Nav:** `/components/gooey-nav` — liquid active-state navigation with particle transitions, WebGL2 rendering, and a CSS fallback.
 - **Option Wheel:** `/components/option-wheel` — curved kinetic selector with pointer, wheel, and keyboard interaction.
+- **Text Loop:** `/components/text-loop` — animated SVG text paths with configurable shapes, ribbons, drag momentum, hover pause, and scroll boost.
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
 - **Lanyard:** `/components/lanyard` — a physics-driven 3D ID badge with a woven strap, drag-and-release interaction, and tap-to-flip card faces.
 
@@ -114,6 +118,43 @@ import GlassSurface from "@/components/glass-surface/GlassSurface";
 
 The `backdrop` prop accepts an image, video, canvas, or React ref to one of those elements. Video backdrops update during playback; for a canvas backdrop, increment `backdropVersion` whenever its pixels change so the WebGL texture is refreshed. The `shape` prop accepts a transparent image path and derives its refractive silhouette from the image alpha channel. This repository keeps the implementation local, so the shadcn registry install command is not required here.
 
+## Micro Slats
+
+Micro Slats is a React + TypeScript adaptation of the [Vue Bits MicroSlats registry component](https://vue-bits.dev/r/MicroSlats.json). The port preserves the upstream OGL/WebGL2 wave shaders, four presets (`swell`, `tide`, `storm`, and `signal`), and Navier–Stokes-style fluid interaction. The React component lives in `components/micro-slats/` and is demonstrated at `/components/micro-slats`.
+
+Install the runtime dependency in a compatible React app:
+
+```bash
+npm install ogl
+```
+
+```tsx
+import MicroSlats from "@/components/micro-slats/MicroSlats";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <MicroSlats
+    preset="swell"
+    color="#A855F7"
+    glintColor="#ffffff"
+    backgroundColor="#120f17"
+    slatWidth={10}
+    slatHeight={25}
+    gap={3}
+    roundness={0.75}
+    interactive
+    cursorStrength={1}
+    cursorSize={40}
+    swirl={0}
+    trail={1.4}
+    lean={0}
+    intro
+    introDuration={1.5}
+  />
+</div>
+```
+
+Every wave setting can override the selected preset. The canvas is decorative and hidden from assistive technology; reduced-motion preferences disable the waves, intro, and pointer stirring. Rendering pauses when the component leaves the viewport or the document tab is hidden. The source is adapted for React and does not require Vue or the Vue Bits registry CLI.
+
 ## Gradient Waves
 
 The component source is taken from the official [React Bits GradientWaves JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/GradientWaves-JS-CSS.json). To install it in a compatible shadcn setup, React Bits documents this command:
@@ -124,6 +165,33 @@ pnpm dlx shadcn@latest add @react-bits/GradientWaves-JS-CSS
 
 The component is checked into `components/gradient-waves/` so it remains locally owned and works with this repository's App Router showcase.
 
+## Gradient Blinds
+
+The component source is taken from the official [React Bits GradientBlinds JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/GradientBlinds-JS-CSS.json). To install it in a compatible shadcn setup:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/GradientBlinds-JS-CSS
+```
+
+The component is checked into `components/gradient-blinds/` and demonstrated at `/components/gradient-blinds`. It uses WebGL2 for the animated slats, pointer-following spotlight, and click ripples.
+
+```jsx
+import GradientBlinds from "@/components/gradient-blinds/GradientBlinds";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <GradientBlinds
+    gradientColors={["#8b8788", "#215ab6"]}
+    angle={20}
+    blindCount={16}
+    blindMinWidth={60}
+    spotlightRadius={0.5}
+    clickEffect="ripple"
+    intro
+  />
+</div>
+```
+
+
 ## Topography
 
 The component source is taken from the official [React Bits Topography JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/Topography-JS-CSS.json). To install it in a compatible shadcn setup:
@@ -133,6 +201,37 @@ pnpm dlx shadcn@latest add @react-bits/Topography-JS-CSS
 ```
 
 The component is checked into `components/topography/` and uses WebGL2 for animated terrain rendering. It supports reduced-motion preferences and pointer/click interactions.
+
+## Text Loop
+
+The checked-in component is an adaptation of the supplied React Bits TextLoop JS/CSS implementation. The shadcn command below installs the upstream registry item, not this repository's adapted version; use `components/text-loop/` when reusing the implementation maintained here.
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/TextLoop-JS-CSS
+```
+
+The component is checked into `components/text-loop/` and showcased at `/components/text-loop`. It imports GSAP at runtime, so every consuming app must install a compatible version explicitly (for example, `pnpm add gsap@^3.13.0`). The GSAP dependency in this repository's `package.json` supports the local showcase and is not transferred automatically with the component subtree. `ribbonColor` and `crossColor` accept CSS color values (including hex, named, `rgb()`, and `hsl()` colors); the crossing ribbon uses `color-mix()` to lighten its stroke for a contrasting dark text overlay. The component stylesheet is a local CSS Module for safe subtree reuse.
+
+```tsx
+import TextLoop from "@/components/text-loop/TextLoop";
+
+<TextLoop
+  text=" OXENN ✦ AI ✦ SEO ✦ AEO ✦ GEO "
+  shape="line"
+  speed={90}
+  direction="forward"
+  separator="✦"
+  curviness={126}
+  fontSize={46}
+  fontWeight={800}
+  ribbon
+  ribbonColor="#5227FF"
+  ribbonWidth={86}
+  draggable
+  pauseOnHover
+/>
+```
+
 
 ## Floating bottom navigation
 
@@ -240,6 +339,7 @@ The script publishes only the reusable component source to `oxenn-components-dis
 ```bash
 npm run check:registry
 npm run test:registry
+npm test
 npm run lint
 npm run typecheck
 npm run build
@@ -248,3 +348,29 @@ npm run build
 ## License
 
 MIT
+
+## Gooey Nav
+
+The component source is based on the official [React Bits GooeyNav JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/GooeyNav-JS-CSS.json). Install it in a compatible shadcn setup with:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/GooeyNav-JS-CSS
+```
+
+The reusable implementation lives in `components/gooey-nav/` and is demonstrated at `/components/gooey-nav`. It supports controlled or internal active state, light/dark themes, particle tuning, hover feedback, and a CSS fallback when WebGL2 is unavailable.
+
+Use `ariaLabel` to name the navigation landmark; when a visible heading should provide the name, pass its id through `ariaLabelledBy` instead.
+
+**Implementation note:** Gooey Nav intentionally retains the official React Bits `.jsx` + `.css` source format instead of converting the upstream source to TypeScript and CSS Modules. This keeps the WebGL implementation close to its published JS/CSS registry version; its global selectors are consistently namespaced with `.gooey-nav` to avoid collisions with other components. This is a documented source-format exception, like the JS/CSS adaptation already described for Glass Surface.
+
+```tsx
+import GooeyNav from "@/components/gooey-nav/GooeyNav";
+
+<GooeyNav
+  items={[{ label: "Home", href: "/" }, { label: "Work", href: "/work" }]}
+  initialActiveIndex={0}
+  theme="light"
+  ariaLabel="Primary navigation"
+  onChange={(index, item) => console.log(index, item.label)}
+/>
+```

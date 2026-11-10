@@ -17,11 +17,35 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "gradient-blinds",
+    "href": "/components/gradient-blinds",
+    "title": "Gradient Blinds",
+    "icon": "Waves",
+    "order": 25,
+    "navigation": true
+  },
+  {
     "slug": "glass-surface",
     "href": "/components/glass-surface",
     "title": "Glass Surface",
     "icon": "Droplets",
     "order": 30,
+    "navigation": true
+  },
+  {
+    "slug": "metallic-paint",
+    "href": "/components/metallic-paint",
+    "title": "Metallic Paint",
+    "icon": "Sparkles",
+    "order": 31,
+    "navigation": true
+  },
+  {
+    "slug": "micro-slats",
+    "href": "/components/micro-slats",
+    "title": "Micro Slats",
+    "icon": "Waves",
+    "order": 32,
     "navigation": true
   },
   {
@@ -38,6 +62,14 @@ export const componentRegistry = [
     "title": "Branched Menu",
     "icon": "GitBranch",
     "order": 50,
+    "navigation": true
+  },
+  {
+    "slug": "gooey-nav",
+    "href": "/components/gooey-nav",
+    "title": "Gooey Nav",
+    "icon": "Sparkles",
+    "order": 55,
     "navigation": true
   },
   {
@@ -62,6 +94,22 @@ export const componentRegistry = [
     "title": "Split Flap Text",
     "icon": "Clapperboard",
     "order": 70,
+    "navigation": true
+  },
+  {
+    "slug": "text-loop",
+    "href": "/components/text-loop",
+    "title": "Text Loop",
+    "icon": "Sparkles",
+    "order": 75,
+    "navigation": true
+  },
+  {
+    "slug": "logo-loop",
+    "href": "/components/logo-loop",
+    "title": "Logo Loop",
+    "icon": "Layers3",
+    "order": 80,
     "navigation": true
   },
   {

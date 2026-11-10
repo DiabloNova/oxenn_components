@@ -51,6 +51,14 @@ export const calculateCameraFrame = ({ layout, size, strapLength, anchor, width,
   };
 };
 
+export const createRendererSafely = create => {
+  try {
+    return create();
+  } catch {
+    return null;
+  }
+};
+
 export const disposeWebGLRenderer = renderer => {
   try {
     renderer.dispose();

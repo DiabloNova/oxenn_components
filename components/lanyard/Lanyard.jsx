@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import styles from './Lanyard.module.css';
-import { calculateCameraFrame, disposeWebGLRenderer, parseColor } from './lanyard-utils.mjs';
+import { calculateCameraFrame, createRendererSafely, disposeWebGLRenderer, parseColor } from './lanyard-utils.mjs';
 
 const CARD_SIZES = {
   portrait: [1.6, 2.25],
@@ -748,10 +748,10 @@ const Lanyard = ({
     const container = containerRef.current;
     if (!container) return undefined;
 
-    let renderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    } catch {
+    const renderer = createRendererSafely(() =>
+      new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
+    );
+    if (!renderer) {
       setWebglUnavailable(true);
       return undefined;
     }

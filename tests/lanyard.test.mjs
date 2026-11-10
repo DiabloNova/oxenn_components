@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { calculateCameraFrame, disposeWebGLRenderer, parseColor } from '../components/lanyard/lanyard-utils.mjs';
+import { calculateCameraFrame, createRendererSafely, disposeWebGLRenderer, parseColor } from '../components/lanyard/lanyard-utils.mjs';
 
 const fallback = [0.25, 0.5, 0.75];
 
@@ -69,4 +69,14 @@ test('renderer context is still released if dispose throws', () => {
     forceContextLoss: () => calls.push('forceContextLoss')
   }), /dispose failed/);
   assert.deepEqual(calls, ['dispose', 'forceContextLoss']);
+});
+
+
+test('renderer creation returns the renderer when WebGL initializes', () => {
+  const renderer = { domElement: {} };
+  assert.equal(createRendererSafely(() => renderer), renderer);
+});
+
+test('renderer creation returns a safe fallback signal when WebGL is unavailable', () => {
+  assert.equal(createRendererSafely(() => { throw new Error('WebGL unavailable'); }), null);
 });
