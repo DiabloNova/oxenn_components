@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import styles from './Lanyard.module.css';
+import { calculateCameraFrame, disposeWebGLRenderer, parseColor } from './lanyard-utils.mjs';
 
 const CARD_SIZES = {
   portrait: [1.6, 2.25],
   landscape: [2.25, 1.6]
 };
-const ANCHORS = { left: 0.27, center: 0.5, right: 0.73 };
 const THICKNESS = 0.018;
 const BEVEL = 0.007;
 const JOINTS = 4;
@@ -149,31 +149,6 @@ const METALS = {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const mix = (a, b, t) => a + (b - a) * t;
-
-const parseColor = (value, fallback) => {
-  try {
-    const ctx = document.createElement('canvas').getContext('2d');
-    if (!ctx) return fallback;
-    const firstSentinel = '#010203';
-    const secondSentinel = '#040506';
-    ctx.fillStyle = firstSentinel;
-    ctx.fillStyle = value;
-    const firstResult = ctx.fillStyle;
-    ctx.fillStyle = secondSentinel;
-    ctx.fillStyle = value;
-    const resolved = ctx.fillStyle;
-    if (firstResult !== resolved) return fallback;
-    if (resolved.startsWith('#')) {
-      const n = parseInt(resolved.slice(1), 16);
-      return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-    }
-    const parts = resolved.match(/[\d.]+/g);
-    if (!parts || parts.length < 3) return fallback;
-    return [Number(parts[0]) / 255, Number(parts[1]) / 255, Number(parts[2]) / 255];
-  } catch {
-    return fallback;
-  }
-};
 
 const luminance = rgb => 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
 const toCss = (rgb, alpha = 1) =>
@@ -731,6 +706,7 @@ const Lanyard = ({
   className = '',
   style
 }) => {
+  const [webglUnavailable, setWebglUnavailable] = useState(false);
   const containerRef = useRef(null);
   const settingsRef = useRef(null);
   const applyRef = useRef(null);
@@ -776,6 +752,7 @@ const Lanyard = ({
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     } catch {
+      setWebglUnavailable(true);
       return undefined;
     }
     renderer.setClearColor(0x000000, 0);
@@ -925,29 +902,24 @@ const Lanyard = ({
 
     const frameView = () => {
       const s = settingsRef.current;
-      const aspect = view.width / view.height;
-      const strapOffset = mix(0.12, 0.42, clamp(s.strapLength, 0, 1));
-      let viewHeight = Math.max(
-        layout.height / clamp(s.size, 0.15, 0.9),
-        layout.height / (1 - strapOffset)
-      );
-      const anchorPosition = ANCHORS[s.anchor] ?? 0.5;
-      const availableWidthRatio = Math.min(0.72, 2 * Math.min(anchorPosition, 1 - anchorPosition));
-      const minimumWidth = layout.width / Math.max(availableWidthRatio, 0.01);
-      if (viewHeight * aspect < minimumWidth) viewHeight = minimumWidth / aspect;
-      const viewWidth = viewHeight * aspect;
+      const frame = calculateCameraFrame({
+        layout,
+        size: s.size,
+        strapLength: s.strapLength,
+        anchor: s.anchor,
+        width: view.width,
+        height: view.height,
+        fov: FOV
+      });
+      const { aspect, viewHeight, viewWidth, anchorX, anchorY, hangTop } = frame;
       camera.aspect = aspect;
-      camera.position.set(0, 0, viewHeight / 2 / Math.tan((FOV * Math.PI) / 360));
+      camera.position.set(0, 0, frame.cameraZ);
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
       camera.updateMatrixWorld();
       foilUniforms.foilKey.value.set(-2.5, 4, 6).normalize().transformDirection(camera.matrixWorldInverse);
       foilUniforms.foilFill.value.set(3, -1, 4).normalize().transformDirection(camera.matrixWorldInverse);
       foilUniforms.foilTop.value.set(0.5, 4.5, 8).normalize().transformDirection(camera.matrixWorldInverse);
-      const anchorX = ((ANCHORS[s.anchor] ?? 0.5) - 0.5) * viewWidth;
-      const anchorY = viewHeight / 2 + 0.2;
-      const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, clamp(s.strapLength, 0, 1));
-      const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);
       configureSimulation(sim, layout, anchorY - hangTop);
       sim.nodes[0].copy(sim.anchor);
@@ -1307,8 +1279,7 @@ const Lanyard = ({
       [frontMaterial, backMaterial, edgeMaterial, metalMaterial, bandMaterial].forEach(material => material.dispose());
       [frontTexture, backTexture, strapTexture, grain, weave].forEach(texture => texture.dispose());
       environment.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
+      disposeWebGLRenderer(renderer);
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
   }, []);
@@ -1318,16 +1289,27 @@ const Lanyard = ({
       ref={containerRef}
       className={`${styles.lanyard} ${className}`.trim()}
       style={style}
-      role={interactive ? 'button' : undefined}
-      tabIndex={interactive ? 0 : undefined}
+      role={interactive && !webglUnavailable ? 'button' : undefined}
+      tabIndex={interactive && !webglUnavailable ? 0 : undefined}
       aria-label={
-        interactive
+        interactive && !webglUnavailable
           ? 'Interactive identity badge. Press Enter or Space to flip between the front and back. Pointer users can drag the badge.'
           : undefined
       }
-      aria-keyshortcuts={interactive ? 'Enter Space' : undefined}
-      onKeyDown={interactive ? handleKeyDown : undefined}
-    />
+      aria-keyshortcuts={interactive && !webglUnavailable ? 'Enter Space' : undefined}
+      onKeyDown={interactive && !webglUnavailable ? handleKeyDown : undefined}
+    >
+      {webglUnavailable && (
+        <div className={styles.fallback} role="status" aria-live="polite">
+          {frontImage ? (
+            <img className={styles.fallbackImage} src={frontImage} alt="Badge front artwork" />
+          ) : (
+            <div className={styles.fallbackCard} aria-hidden="true" />
+          )}
+          <span>3D preview is unavailable in this browser.</span>
+        </div>
+      )}
+    </div>
   );
 };
 
