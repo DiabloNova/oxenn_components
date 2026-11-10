@@ -461,11 +461,13 @@ export default function MicroSlats(incomingProps: MicroSlatsProps) {
     return value === undefined || value === null ? base[key] : value;
   };
 
+  const previousSettings = settingsRef.current;
   settingsRef.current = {
-    // Colors are resolved in an effect, never during React render.
-    color: [0.06, 0.72, 0.51, 1],
-    glintColor: [1, 1, 1, 1],
-    backgroundColor: [0, 0, 0, 1],
+    // Preserve the last committed CSS color values between unrelated renders.
+    // New CSS colors are resolved in an effect, never during React render.
+    color: previousSettings?.color ?? [0.06, 0.72, 0.51, 1],
+    glintColor: previousSettings?.glintColor ?? [1, 1, 1, 1],
+    backgroundColor: previousSettings?.backgroundColor ?? [0, 0, 0, 1],
     slatWidth: propsRef.current.slatWidth ?? 10,
     slatHeight: propsRef.current.slatHeight ?? 25,
     gap: propsRef.current.gap ?? 3,
