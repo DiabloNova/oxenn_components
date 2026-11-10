@@ -462,9 +462,10 @@ export default function MicroSlats(incomingProps: MicroSlatsProps) {
   };
 
   settingsRef.current = {
-    color: parseColor(propsRef.current.color || '#10B981', [0.06, 0.72, 0.51, 1]),
-    glintColor: parseColor(propsRef.current.glintColor || '#ffffff', [1, 1, 1, 1]),
-    backgroundColor: parseColor(propsRef.current.backgroundColor || '#000000', [0, 0, 0, 1]),
+    // Colors are resolved in an effect, never during React render.
+    color: [0.06, 0.72, 0.51, 1],
+    glintColor: [1, 1, 1, 1],
+    backgroundColor: [0, 0, 0, 1],
     slatWidth: propsRef.current.slatWidth ?? 10,
     slatHeight: propsRef.current.slatHeight ?? 25,
     gap: propsRef.current.gap ?? 3,
@@ -777,7 +778,7 @@ const mountScene = () => {
 
   const frame = (now: number) => {
     raf = 0;
-    if (!alive) return;
+    if (!alive || !visible || document.hidden) return;
     const s = settingsRef.current;
     const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
     last = now;
@@ -861,11 +862,13 @@ const mountScene = () => {
     renderer.render({ scene: slatMesh });
 
     const moving = (!s.paused && !reducedMotion && s.speed !== 0) || introClock < 1;
-    if (visible && (moving || fluidActive || fluidDirty)) raf = requestAnimationFrame(frame);
+    if (visible && !document.hidden && (moving || fluidActive || fluidDirty)) {
+      raf = requestAnimationFrame(frame);
+    }
   };
 
   const start = () => {
-    if (raf || !visible || !alive) return;
+    if (raf || !visible || !alive || document.hidden) return;
     last = performance.now();
     raf = requestAnimationFrame(frame);
   };
@@ -925,7 +928,17 @@ const mountScene = () => {
     if (!e.relatedTarget) onPointerLeave();
   };
   const onVisibility = () => {
-    if (!document.hidden) start();
+    if (document.hidden) {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+      pointer.tracked = false;
+      return;
+    }
+
+    // Reset the frame clock so time spent in a background tab is not simulated.
+    start();
   };
 
   window.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -938,6 +951,11 @@ const mountScene = () => {
   resizeObserver.observe(container);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
+    if (!visible && raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      return;
+    }
     start();
   });
   intersectionObserver.observe(container);
@@ -971,6 +989,17 @@ mountSceneRef.current = mountScene;
     return () => disposeSceneRef.current?.();
   }, []);
 
+  // Resolve CSS colors after commit; touching canvas/DOM APIs during render is unsafe.
+  useEffect(() => {
+    const settings = settingsRef.current;
+    if (!settings) return;
+
+    settings.color = parseColor(propsRef.current.color || '#10B981', [0.06, 0.72, 0.51, 1]);
+    settings.glintColor = parseColor(propsRef.current.glintColor || '#ffffff', [1, 1, 1, 1]);
+    settings.backgroundColor = parseColor(propsRef.current.backgroundColor || '#000000', [0, 0, 0, 1]);
+    wakeRef.current();
+  }, [incomingProps.color, incomingProps.glintColor, incomingProps.backgroundColor]);
+
   // Wake a previously idle renderer when any visual or interaction prop changes.
   useEffect(() => {
     wakeRef.current();
@@ -984,3 +1013,4 @@ mountSceneRef.current = mountScene;
       aria-hidden="true"
     />
   );
+}
