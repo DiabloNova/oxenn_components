@@ -84,7 +84,7 @@ export const componentRegistry = [
     "slug": "split-flap-text",
     "href": "/components/split-flap-text",
     "title": "Split Flap Text",
-    "icon": "Clipboard",
+    "icon": "Clapperboard",
     "order": 70,
     "navigation": true
   },
