@@ -13,7 +13,8 @@
     "test:registry": "node --test tests/component-registry.test.mjs",
     "predev": "npm run generate:registry",
     "prebuild": "npm run generate:registry",
-    "pretypecheck": "npm run generate:registry"
+    "pretypecheck": "npm run generate:registry",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@types/node": "^22.15.0",
@@ -33,3 +34,4 @@
     "typescript": "^5.8.0"
   }
 }
+

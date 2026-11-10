@@ -3,6 +3,7 @@
 import { Mesh, Program, Renderer, RenderTarget, Texture, Triangle } from 'ogl';
 import { useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
+import { createRendererSafely, selectSwellPreset, subscribeToReducedMotion } from './micro-slats-utils.mjs';
 
 export type SwellPreset = 'swell' | 'tide' | 'storm' | 'signal';
 type Rgba = [number, number, number, number];
@@ -455,10 +456,22 @@ export default function MicroSlats(incomingProps: MicroSlatsProps) {
   const disposeSceneRef = useRef<(() => void) | undefined>(undefined);
   const mountSceneRef = useRef<() => void>(() => {});
 
-  const pick = <K extends keyof WaveValues>(key: K): WaveValues[K] => {
-    const value = propsRef.current[key] as WaveValues[K] | undefined;
-    const base = SWELL_PRESETS[propsRef.current.preset || 'swell'] || SWELL_PRESETS.swell;
-    return value === undefined || value === null ? base[key] : value;
+  const pick = (key: keyof WaveValues): number => {
+    const preset = selectSwellPreset(propsRef.current.preset, SWELL_PRESETS);
+    const props = propsRef.current;
+
+    switch (key) {
+      case 'scale': return props.scale ?? preset.scale;
+      case 'speed': return props.speed ?? preset.speed;
+      case 'direction': return props.direction ?? preset.direction;
+      case 'chop': return props.chop ?? preset.chop;
+      case 'stretch': return props.stretch ?? preset.stretch;
+      case 'glint': return props.glint ?? preset.glint;
+      case 'contrast': return props.contrast ?? preset.contrast;
+      case 'perspective': return props.perspective ?? preset.perspective;
+      case 'fog': return props.fog ?? preset.fog;
+      default: return preset.scale;
+    }
   };
 
   const previousSettings = settingsRef.current;
@@ -487,7 +500,10 @@ const mountScene = () => {
   const container = containerRef.current;
   if (!container) return;
 
-  const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: false, depth: false });
+  const renderer = createRendererSafely(() =>
+    new Renderer({ alpha: true, premultipliedAlpha: true, antialias: false, depth: false })
+  );
+  if (!renderer) return;
   const gl = renderer.gl;
   if (!renderer.isWebgl2) {
     gl.getExtension('WEBGL_lose_context')?.loseContext();
@@ -612,7 +628,8 @@ const mountScene = () => {
   });
   const scalePass = fluidPass(scaleFragment, { uSource: { value: blank }, uValue: { value: 0 } });
 
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let reducedMotion = reducedMotionQuery.matches;
 
   let width = 1;
   let height = 1;
@@ -943,6 +960,24 @@ const mountScene = () => {
     start();
   };
 
+  const unsubscribeReducedMotion = subscribeToReducedMotion(reducedMotionQuery, (matches) => {
+    reducedMotion = matches;
+    pointer.tracked = false;
+
+    if (matches) {
+      splats.length = 0;
+      fluidUntil = 0;
+      fluidDirty = fluid !== null;
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+
+    // Render one settled frame when motion is reduced; resume the loop when it is allowed.
+    start();
+  });
+
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('pointerdown', onPointerDown, { passive: true });
   window.addEventListener('pointerout', onPointerOut, { passive: true });
@@ -976,6 +1011,7 @@ const mountScene = () => {
     window.removeEventListener('pointerout', onPointerOut);
     window.removeEventListener('blur', onPointerLeave);
     document.removeEventListener('visibilitychange', onVisibility);
+    unsubscribeReducedMotion();
     wakeRef.current = () => {};
     disposeFluid();
     dispose(fieldTarget);
@@ -1016,3 +1052,4 @@ mountSceneRef.current = mountScene;
     />
   );
 }
+
