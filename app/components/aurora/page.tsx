@@ -20,7 +20,11 @@ export default function AuroraPage() {
         </section>
         <section style={{ marginTop: 28, padding: 24, borderRadius: 16, background: "#11131d", border: "1px solid #272a38" }}>
           <h2 style={{ fontSize: 18, margin: "0 0 12px" }}>Usage</h2>
-          <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: "#c4c8d4", fontSize: 13, lineHeight: 1.7 }}>{`import Aurora from "@/components/aurora/Aurora";\n\n<div style={{ width: "100%", height: 600, position: "relative" }}>\n  <Aurora colorStops={["#00ff36", "#3a7eea", "#00ff49"]} layers={3} mouseInteraction />\n</div>`}</pre>
+          <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: "#c4c8d4", fontSize: 13, lineHeight: 1.7 }}>{`import Aurora from "@/components/aurora/Aurora";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <Aurora colorStops={["#00ff36", "#3a7eea", "#00ff49"]} layers={3} mouseInteraction />
+</div>`}</pre>
         </section>
       </div>
     </main>
