@@ -29,14 +29,11 @@ function createRechartsMocks() {
         "data-animation-active": String(props.isAnimationActive),
       }),
     RadarChart: ({ data, children }) =>
-      jsxRuntime.jsx(
-        "section",
-        {
-          "data-chart-size": String(data.length),
-          "data-first-skill": data[0]?.skill,
-          children,
-        },
-      ),
+      jsxRuntime.jsx("svg", {
+        "data-chart-size": String(data.length),
+        "data-first-skill": data[0]?.skill,
+        children,
+      }),
     ResponsiveContainer: ({ children }) =>
       jsxRuntime.jsx("div", { children }),
     Tooltip: () => null,
@@ -139,7 +136,7 @@ test("tracks browser reduced-motion changes and cleans up its subscription", () 
     browserWindow: { matchMedia: () => mediaQuery },
   });
 
-  const initialRadar = findElement(Pattern(), recharts.Radar);
+  const initialRadar = findElement(Pattern({}), recharts.Radar);
   assert.equal(initialRadar.props.isAnimationActive, false);
   assert.equal(listeners.size, 1);
 
@@ -147,7 +144,7 @@ test("tracks browser reduced-motion changes and cleans up its subscription", () 
   for (const listener of listeners) listener();
 
   assert.equal(notifications, 1);
-  const updatedRadar = findElement(Pattern(), recharts.Radar);
+  const updatedRadar = findElement(Pattern({}), recharts.Radar);
   assert.equal(updatedRadar.props.isAnimationActive, true);
 
   cleanup();
@@ -166,6 +163,6 @@ test("falls back safely when matchMedia is unavailable", () => {
     browserWindow: {},
   });
 
-  const radar = findElement(Pattern(), recharts.Radar);
+  const radar = findElement(Pattern({}), recharts.Radar);
   assert.equal(radar.props.isAnimationActive, true);
 });
