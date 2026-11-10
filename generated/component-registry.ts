@@ -17,6 +17,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "aurora",
+    "href": "/components/aurora",
+    "title": "Aurora",
+    "icon": "Waves",
+    "order": 22,
+    "navigation": true
+  },
+  {
     "slug": "gradient-blinds",
     "href": "/components/gradient-blinds",
     "title": "Gradient Blinds",
