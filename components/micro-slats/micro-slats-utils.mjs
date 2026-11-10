@@ -42,3 +42,17 @@ export function subscribeToReducedMotion(mediaQuery, onChange) {
   return () => mediaQuery.removeEventListener('change', handleChange);
 }
 
+
+/**
+ * Decide whether an animation frame should be queued without coupling the
+ * scheduler to browser globals.
+ * @param {boolean} visible
+ * @param {boolean} documentHidden
+ * @param {boolean} moving
+ * @param {boolean} fluidActive
+ * @param {boolean} fluidDirty
+ * @returns {boolean}
+ */
+export function shouldScheduleFrame(visible, documentHidden, moving, fluidActive, fluidDirty) {
+  return visible && !documentHidden && (moving || fluidActive || fluidDirty);
+}

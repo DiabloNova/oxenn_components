@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   createRendererSafely,
   selectSwellPreset,
+  shouldScheduleFrame,
   subscribeToReducedMotion,
 } from '../components/micro-slats/micro-slats-utils.mjs';
 
@@ -57,3 +58,12 @@ test('reduced-motion subscription reports live changes and removes its listener'
   assert.deepEqual(changes, [true, false]);
 });
 
+
+test('animation frames are scheduled only while visible and work remains', () => {
+  assert.equal(shouldScheduleFrame(false, false, true, false, false), false);
+  assert.equal(shouldScheduleFrame(true, true, true, false, false), false);
+  assert.equal(shouldScheduleFrame(true, false, false, false, false), false);
+  assert.equal(shouldScheduleFrame(true, false, true, false, false), true);
+  assert.equal(shouldScheduleFrame(true, false, false, true, false), true);
+  assert.equal(shouldScheduleFrame(true, false, false, false, true), true);
+});

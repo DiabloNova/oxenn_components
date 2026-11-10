@@ -3,7 +3,7 @@
 import { Mesh, Program, Renderer, RenderTarget, Texture, Triangle } from 'ogl';
 import { useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { createRendererSafely, selectSwellPreset, subscribeToReducedMotion } from './micro-slats-utils.mjs';
+import { createRendererSafely, selectSwellPreset, shouldScheduleFrame, subscribeToReducedMotion } from './micro-slats-utils.mjs';
 
 export type SwellPreset = 'swell' | 'tide' | 'storm' | 'signal';
 type Rgba = [number, number, number, number];
@@ -637,7 +637,7 @@ const mountScene = () => {
   let last = performance.now();
   let time = 0;
   let introClock = 0;
-  let visible = true;
+  const visibility = { current: true };
   let alive = true;
   let fluid: Fluid | null = null;
   let fluidUntil = 0;
@@ -797,7 +797,7 @@ const mountScene = () => {
 
   const frame = (now: number) => {
     raf = 0;
-    if (!alive || !visible || document.hidden) return;
+    if (!alive || !visibility.current || document.hidden) return;
     const s = settingsRef.current;
     const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
     last = now;
@@ -881,13 +881,13 @@ const mountScene = () => {
     renderer.render({ scene: slatMesh });
 
     const moving = (!s.paused && !reducedMotion && s.speed !== 0) || introClock < 1;
-    if (visible && !document.hidden && (moving || fluidActive || fluidDirty)) {
+    if (shouldScheduleFrame(visibility.current, document.hidden, moving, fluidActive, fluidDirty)) {
       raf = requestAnimationFrame(frame);
     }
   };
 
   const start = () => {
-    if (raf || !visible || !alive || document.hidden) return;
+    if (raf || !visibility.current || !alive || document.hidden) return;
     last = performance.now();
     raf = requestAnimationFrame(frame);
   };
@@ -987,8 +987,8 @@ const mountScene = () => {
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(container);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
-    if (!visible && raf) {
+    visibility.current = entry.isIntersecting;
+    if (!visibility.current && raf) {
       cancelAnimationFrame(raf);
       raf = 0;
       return;
@@ -1002,7 +1002,7 @@ const mountScene = () => {
 
   disposeSceneRef.current = () => {
     alive = false;
-    visible = false;
+    visibility.current = false;
     cancelAnimationFrame(raf);
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
