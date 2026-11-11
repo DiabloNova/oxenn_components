@@ -65,6 +65,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "c-chart-23",
+    "href": "/components/c-chart-23",
+    "title": "C Chart 23",
+    "icon": "Radar",
+    "order": 45,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",

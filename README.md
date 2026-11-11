@@ -56,6 +56,19 @@ CI verifies that the committed registry matches the current route folders and me
 
 Open the hamburger menu on the home page to navigate to all component showcases.
 
+
+## C Chart 23
+
+The ReUI C Chart 23 example is adapted to this repository's component portability contract. Its reusable implementation lives in `components/c-chart-23/Chart23.tsx` and uses Recharts directly, with local card and tooltip styling rather than requiring shadcn `Card` or `ChartContainer` primitives.
+
+Install the upstream registry item in a compatible shadcn project with:
+
+```bash
+pnpm dlx shadcn@latest add @reui/c-chart-23
+```
+
+For this repository's standalone implementation, Recharts is declared as a project dependency. The showcase is available at `/components/c-chart-23`.
+
 ## Branched Menu
 
 The component source is based on the supplied React Bits BranchedMenu JS/CSS example and is adapted to this repository's portability contract: its styles are a local CSS Module, and icons are passed as React nodes so the reusable component does not add a Hugeicons runtime dependency.
