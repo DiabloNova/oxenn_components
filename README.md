@@ -382,3 +382,29 @@ import Aurora from "@/components/aurora/Aurora";
   />
 </div>
 ```
+
+## Lanyard
+
+The component source is based on the official [React Bits Lanyard JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/Lanyard-JS-CSS.json). The Three.js implementation lives in `components/lanyard/` and is demonstrated at `/components/lanyard`.
+
+```tsx
+import Lanyard from "@/components/lanyard/Lanyard";
+
+export default function LanyardExample() {
+  return (
+    <div style={{ width: "100%", height: 600 }}>
+      <Lanyard
+        frontImage="/lanyard-front.jpg"
+        backImage="/lanyard-back.svg"
+        orientation="portrait"
+        finish="glossy"
+        metal="graphite"
+        interactive
+        intro
+      />
+    </div>
+  );
+}
+```
+
+The showcase uses the supplied portrait on the front and an Oxenn mark on the reverse. Both card images are local assets in `public/`; a strap texture is optional.
