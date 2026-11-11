@@ -119,14 +119,6 @@ export const componentRegistry = [
     "icon": "Radar",
     "order": 1000,
     "navigation": true
-  },
-  {
-    "slug": "laser-flow",
-    "href": "/components/laser-flow",
-    "title": "Laser Flow",
-    "icon": "Sparkles",
-    "order": 1010,
-    "navigation": true
   }
 ] as const;
 export type ComponentRegistryItem = (typeof componentRegistry)[number];
