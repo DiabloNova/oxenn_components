@@ -17,6 +17,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "aurora",
+    "href": "/components/aurora",
+    "title": "Aurora",
+    "icon": "Waves",
+    "order": 22,
+    "navigation": true
+  },
+  {
     "slug": "gradient-blinds",
     "href": "/components/gradient-blinds",
     "title": "Gradient Blinds",
@@ -57,6 +65,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "c-chart-23",
+    "href": "/components/c-chart-23",
+    "title": "C Chart 23",
+    "icon": "Radar",
+    "order": 45,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",
@@ -81,6 +97,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "lanyard",
+    "href": "/components/lanyard",
+    "title": "Lanyard",
+    "icon": "IdCard",
+    "order": 65,
+    "navigation": true
+  },
+  {
     "slug": "split-flap-text",
     "href": "/components/split-flap-text",
     "title": "Split Flap Text",
@@ -102,6 +126,14 @@ export const componentRegistry = [
     "title": "Logo Loop",
     "icon": "Layers3",
     "order": 80,
+    "navigation": true
+  },
+  {
+    "slug": "grid-motion",
+    "href": "/components/grid-motion",
+    "title": "Grid Motion",
+    "icon": "Grid3X3",
+    "order": 85,
     "navigation": true
   },
   {
