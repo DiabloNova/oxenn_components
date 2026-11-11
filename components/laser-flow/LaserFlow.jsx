@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import './LaserFlow.css';
 
@@ -451,6 +451,8 @@ export const LaserFlow = ({
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const wakeRef = useRef(null);
+  const resizeRef = useRef(null);
+  const [glEpoch, setGlEpoch] = useState(0);
   const settings = {
     surfaceRef,
     beamPosition: clamp(beamPosition, 0, 1),
@@ -559,6 +561,20 @@ export const LaserFlow = ({
     let visible = true;
     let alive = true;
 
+    const onContextLost = event => {
+      event.preventDefault();
+      alive = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      wakeRef.current = null;
+      resizeRef.current = null;
+    };
+    const onContextRestored = () => {
+      setGlEpoch(epoch => epoch + 1);
+    };
+    canvas.addEventListener('webglcontextlost', onContextLost);
+    canvas.addEventListener('webglcontextrestored', onContextRestored);
+
     const toRgb = value => {
       if (!probeContext) return [0.22, 0.28, 1];
       probeContext.clearRect(0, 0, 1, 1);
@@ -662,6 +678,16 @@ export const LaserFlow = ({
       state.ratio = canvas.width / width;
       render();
     };
+    resizeRef.current = resize;
+
+    let dprMedia = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    const onDprChange = () => {
+      dprMedia.removeEventListener('change', onDprChange);
+      dprMedia = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+      dprMedia.addEventListener('change', onDprChange);
+      resize();
+    };
+    dprMedia.addEventListener('change', onDprChange);
 
     const render = () => {
       const s = settingsRef.current;
@@ -785,7 +811,7 @@ export const LaserFlow = ({
 
       render();
       const settling =
-        Math.abs(state.lens.strength - (s.mouseInteraction && state.pointer.inside ? 1 : 0)) > 0.002 ||
+        Math.abs(state.lens.strength - (s.mouseInteraction && state.pointer.inside && !reduce ? 1 : 0)) > 0.002 ||
         Math.hypot(state.lens.vx, state.lens.vy) > 0.5;
       if (moving || introducing || settling) raf = requestAnimationFrame(frame);
       else last = 0;
@@ -796,6 +822,10 @@ export const LaserFlow = ({
     };
 
     const onPointerMove = event => {
+      if (!settingsRef.current.mouseInteraction) {
+        state.pointer.inside = false;
+        return;
+      }
       const rect = container.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
@@ -840,6 +870,10 @@ export const LaserFlow = ({
       alive = false;
       cancelAnimationFrame(raf);
       wakeRef.current = null;
+      resizeRef.current = null;
+      dprMedia.removeEventListener('change', onDprChange);
+      canvas.removeEventListener('webglcontextlost', onContextLost);
+      canvas.removeEventListener('webglcontextrestored', onContextRestored);
       resizeObserver.disconnect();
       intersection.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
@@ -850,7 +884,11 @@ export const LaserFlow = ({
       gl.deleteVertexArray(vao);
       gl.deleteProgram(program);
     };
-  }, []);
+  }, [glEpoch]);
+
+  useEffect(() => {
+    resizeRef.current?.();
+  }, [dpr]);
 
   useEffect(() => {
     wakeRef.current?.();
