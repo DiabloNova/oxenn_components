@@ -84,7 +84,7 @@ function usePrefersReducedMotion() {
 type ViewportLayout = "mobile" | "tablet" | "desktop";
 
 const MOBILE_LAYOUT_QUERY = "(width < 48rem)";
-const TABLET_LAYOUT_QUERY = "(width >= 48rem) and (width <= 1025px)";
+const TABLET_LAYOUT_QUERY = "(width >= 48rem) and (width < 1025px)";
 
 function subscribeToViewportLayout(callback: () => void) {
   if (typeof window === "undefined") return () => {};
