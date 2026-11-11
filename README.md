@@ -43,6 +43,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Home:** `/` — animated collapsible sidebar.
 - **Floating bottom navigation:** `/components/floating-bottom-nav` — floating glass dock with active-item expansion, hover feedback, and a quick-create task dialog.
 - **Gradient Waves:** `/components/gradient-waves` — the official React Bits GradientWaves JS/CSS source with WebGL2 rendering, pointer-driven lighting/parallax, and click-triggered swells.
+- **Aurora:** `/components/aurora` — the official React Bits Aurora JS/CSS WebGL aurora with layered color ramps, pointer response, intro reveal, and light-mode rendering.
 - **Micro Slats:** `/components/micro-slats` — a WebGL2 slat ocean with four wave presets, an OGL fluid solver, pointer splashes, and reduced-motion-aware rendering.
 - **Gradient Blinds:** `/components/gradient-blinds` — the official React Bits GradientBlinds JS/CSS source with WebGL2 satin slats, pointer spotlight, sway, and click-triggered ripples.
 - **Topography:** `/components/topography` — the official React Bits Topography JS/CSS source with WebGL2 terrain contours, pointer-responsive sculpting, glow, and click-triggered pulses.
@@ -345,4 +346,26 @@ import GooeyNav from "@/components/gooey-nav/GooeyNav";
   ariaLabel="Primary navigation"
   onChange={(index, item) => console.log(index, item.label)}
 />
+```
+
+## Aurora
+
+Aurora is sourced from the official [React Bits Aurora JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/Aurora-JS-CSS.json) and checked into `components/aurora/`. It uses WebGL2, supports up to five color stops and three layers, and respects reduced-motion preferences. The showcase is available at `/components/aurora`.
+
+```jsx
+import Aurora from "@/components/aurora/Aurora";
+
+<div style={{ width: "100%", height: 600, position: "relative" }}>
+  <Aurora
+    colorStops={["#00ff36", "#3a7eea", "#00ff49"]}
+    amplitude={2.2}
+    blend={0.86}
+    height={0.38}
+    speed={1.6}
+    layers={3}
+    mouseInteraction
+    intro
+    lightMode
+  />
+</div>
 ```
