@@ -81,6 +81,44 @@ function usePrefersReducedMotion() {
   );
 }
 
+type ViewportLayout = "mobile" | "tablet" | "desktop";
+
+const MOBILE_LAYOUT_QUERY = "(max-width: 767px)";
+const TABLET_LAYOUT_QUERY = "(min-width: 768px) and (max-width: 1024px)";
+
+function subscribeToViewportLayout(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+
+  const queries = [
+    window.matchMedia(MOBILE_LAYOUT_QUERY),
+    window.matchMedia(TABLET_LAYOUT_QUERY),
+  ];
+  queries.forEach((query) => query.addEventListener("change", callback));
+
+  return () => {
+    queries.forEach((query) => query.removeEventListener("change", callback));
+  };
+}
+
+function getViewportLayoutSnapshot(): ViewportLayout {
+  if (typeof window === "undefined") return "desktop";
+  if (window.matchMedia(MOBILE_LAYOUT_QUERY).matches) return "mobile";
+  if (window.matchMedia(TABLET_LAYOUT_QUERY).matches) return "tablet";
+  return "desktop";
+}
+
+function getServerViewportLayoutSnapshot(): ViewportLayout {
+  return "desktop";
+}
+
+function useViewportLayout() {
+  return useSyncExternalStore(
+    subscribeToViewportLayout,
+    getViewportLayoutSnapshot,
+    getServerViewportLayoutSnapshot,
+  );
+}
+
 const topJourneyData: JourneyItem[] = [
   {
     id: "2020-march",
@@ -158,6 +196,7 @@ export default function Timeline({
     slidePercent: number;
   } | null>(null);
   const reducedMotion = usePrefersReducedMotion();
+  const viewportLayout = useViewportLayout();
   const sectionStyle = {
     color: textColor,
     backgroundColor,
@@ -174,8 +213,8 @@ export default function Timeline({
 
     if (!section) return;
 
-    const isTablet = window.innerWidth >= 642 && window.innerWidth <= 1024;
-    const isMobile = window.innerWidth < 642;
+    const isTablet = viewportLayout === "tablet";
+    const isMobile = viewportLayout === "mobile";
     const slidePercent = isTablet ? -60 : isMobile ? -57 : -65;
     const lineWidth = isTablet ? "75%" : isMobile ? "65%" : "98%";
     const lineStart = isTablet ? "top 10%" : isMobile ? "top top" : "top top";
@@ -228,7 +267,7 @@ export default function Timeline({
     return () => {
       lineProgressRef.current = null;
     };
-  }, { dependencies: [reducedMotion], scope: sectionRef });
+  }, { dependencies: [reducedMotion, viewportLayout], revertOnUpdate: true, scope: sectionRef });
 
   useGSAP(() => {
     const section = sectionRef.current;
@@ -295,7 +334,7 @@ export default function Timeline({
     };
 
     const ITEM_SPAN = 0.14;
-    const MAX_ITEM_DRIFT = window.innerWidth < 642 ? 0.2 : 0.35;
+    const MAX_ITEM_DRIFT = viewportLayout === "mobile" ? 0.2 : 0.35;
 
     const createItemTimeline = (item: JourneyItem) => {
       const lineSelector = `.jl-${item.id}`;
@@ -392,18 +431,11 @@ export default function Timeline({
       createItemTimeline(item);
     });
 
-    const handleResize = () => {
-      ScrollTrigger.refresh();
-    };
-
-    window.addEventListener("resize", handleResize);
-
     return () => {
       Object.values(titleSplits).forEach((split) => split?.revert?.());
       Object.values(descriptionSplits).forEach((split) => split?.revert?.());
-      window.removeEventListener("resize", handleResize);
     };
-  }, { dependencies: [reducedMotion], scope: sectionRef });
+  }, { dependencies: [reducedMotion, viewportLayout], revertOnUpdate: true, scope: sectionRef });
 
   const content = (
     <section
@@ -539,11 +571,9 @@ export default function Timeline({
     <ReactLenis
       root
       options={{
-        duration: reducedMotion
-          ? Math.min(ANIMATION_DURATION, 0.6)
-          : ANIMATION_DURATION,
-        smoothWheel: true,
-        syncTouch: true,
+        duration: ANIMATION_DURATION,
+        smoothWheel: !reducedMotion,
+        syncTouch: !reducedMotion,
         touchMultiplier: 1,
         wheelMultiplier: 1,
       }}
