@@ -113,6 +113,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "grid-motion",
+    "href": "/components/grid-motion",
+    "title": "Grid Motion",
+    "icon": "Grid3X3",
+    "order": 85,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",
