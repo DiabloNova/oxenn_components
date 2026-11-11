@@ -11,6 +11,10 @@ import ts from "typescript";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const componentPath = path.join(root, "components/c-chart-23/Chart23.tsx");
+const componentStylesPath = path.join(root, "components/c-chart-23/Chart23.module.css");
+const showcasePath = path.join(root, "app/components/c-chart-23/page.tsx");
+const showcaseMetadataPath = path.join(root, "app/components/c-chart-23/component.json");
+const registryPath = path.join(root, "generated/component-registry.ts");
 const componentSource = readFileSync(componentPath, "utf8");
 const compiledComponent = ts.transpileModule(componentSource, {
   compilerOptions: {
@@ -21,6 +25,8 @@ const compiledComponent = ts.transpileModule(componentSource, {
 }).outputText;
 
 function createRechartsMocks() {
+  let tooltipProps;
+
   const recharts = {
     PolarAngleAxis: () => null,
     PolarGrid: () => null,
@@ -37,17 +43,27 @@ function createRechartsMocks() {
         "data-first-skill": data[0]?.skill,
         children,
       }),
-    ResponsiveContainer: ({ children }) =>
-      jsxRuntime.jsx("div", { children }),
-    Tooltip: () => null,
+    ResponsiveContainer: ({ width, height, children }) =>
+      jsxRuntime.jsx("div", {
+        "data-responsive-width": String(width),
+        "data-responsive-height": String(height),
+        children,
+      }),
+    Tooltip: (props) => {
+      tooltipProps = props;
+      return null;
+    },
   };
 
-  return recharts;
+  return {
+    recharts,
+    getTooltipProps: () => tooltipProps,
+  };
 }
 
 function loadPattern({ reactModule = React, browserWindow } = {}) {
   const componentModule = { exports: {} };
-  const recharts = createRechartsMocks();
+  const mocks = createRechartsMocks();
   const styles = new Proxy({}, { get: (_target, key) => String(key) });
 
   vm.runInNewContext(compiledComponent, {
@@ -57,13 +73,17 @@ function loadPattern({ reactModule = React, browserWindow } = {}) {
     require(specifier) {
       if (specifier === "react") return reactModule;
       if (specifier === "react/jsx-runtime") return jsxRuntime;
-      if (specifier === "recharts") return recharts;
+      if (specifier === "recharts") return mocks.recharts;
       if (specifier === "./Chart23.module.css") return styles;
       throw new Error(`Unexpected import: ${specifier}`);
     },
   });
 
-  return { Pattern: componentModule.exports.Pattern, recharts };
+  return {
+    Pattern: componentModule.exports.Pattern,
+    recharts: mocks.recharts,
+    getTooltipProps: mocks.getTooltipProps,
+  };
 }
 
 function findElement(node, type) {
@@ -168,4 +188,128 @@ test("falls back safely when matchMedia is unavailable", () => {
 
   const radar = findElement(Pattern({}), recharts.Radar);
   assert.equal(radar.props.isAnimationActive, true);
+});
+
+test("renders the custom tooltip for a Recharts active payload", () => {
+  const { Pattern, getTooltipProps } = loadPattern();
+
+  renderToStaticMarkup(
+    React.createElement(Pattern, {
+      data: [{ skill: "Testing", score: 85 }],
+    }),
+  );
+
+  const tooltipProps = getTooltipProps();
+  assert.ok(React.isValidElement(tooltipProps?.content));
+  assert.equal(tooltipProps.cursor, false);
+
+  const tooltipHtml = renderToStaticMarkup(
+    React.createElement(tooltipProps.content.type, {
+      ...tooltipProps.content.props,
+      active: true,
+      payload: [
+        {
+          value: 85,
+          payload: { skill: "Testing", score: 85 },
+        },
+      ],
+    }),
+  );
+
+  assert.match(tooltipHtml, /Testing/);
+  assert.match(tooltipHtml, />85</);
+  assert.match(tooltipHtml, /Proficiency/);
+});
+
+test("keeps the chart container responsive within its defined chart height", () => {
+  const { Pattern } = loadPattern();
+  const html = renderToStaticMarkup(React.createElement(Pattern));
+  const styles = readFileSync(componentStylesPath, "utf8");
+  const chartStyles = styles.match(/\.chart\s*\{([^}]+)\}/)?.[1];
+
+  assert.match(html, /data-responsive-width="100%"/);
+  assert.match(html, /data-responsive-height="100%"/);
+  assert.ok(chartStyles, "chart CSS block should exist");
+  assert.match(chartStyles, /width:\s*100%/);
+  assert.match(chartStyles, /height:\s*292px/);
+  assert.match(chartStyles, /min-width:\s*0/);
+});
+
+test("renders the showcase route and mounts the reusable chart", () => {
+  const routeSource = readFileSync(showcasePath, "utf8");
+  const compiledRoute = ts.transpileModule(routeSource, {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  const routeModule = { exports: {} };
+  const styles = new Proxy({}, { get: (_target, key) => String(key) });
+  const iconNames = ["ArrowLeft", "ArrowUpRight", "Radar"];
+  const icons = Object.fromEntries(
+    iconNames.map((name) => [
+      name,
+      (props) =>
+        jsxRuntime.jsx("svg", {
+          "data-mock-icon": name,
+          width: props.size ?? 16,
+          height: props.size ?? 16,
+        }),
+    ]),
+  );
+
+  vm.runInNewContext(compiledRoute, {
+    module: routeModule,
+    exports: routeModule.exports,
+    require(specifier) {
+      if (specifier === "next/link") {
+        return ({ href, children, ...props }) =>
+          jsxRuntime.jsx("a", { href, ...props, children });
+      }
+      if (specifier === "lucide-react") return icons;
+      if (specifier === "@/components/c-chart-23/Chart23") {
+        return {
+          Pattern: () => jsxRuntime.jsx("div", { "data-chart-preview": "true" }),
+        };
+      }
+      if (specifier === "./page.module.css") return styles;
+      throw new Error(`Unexpected import: ${specifier}`);
+    },
+  });
+
+  const html = renderToStaticMarkup(
+    React.createElement(routeModule.exports.default),
+  );
+
+  assert.match(html, /LIVE PREVIEW/);
+  assert.match(html, /Map your team/);
+  assert.match(html, /data-chart-preview="true"/);
+  assert.match(html, /RECHARTS · RADAR/);
+});
+
+test("keeps the component metadata and generated registry entry aligned", () => {
+  const metadata = JSON.parse(readFileSync(showcaseMetadataPath, "utf8"));
+  const registry = readFileSync(registryPath, "utf8");
+
+  assert.deepEqual(metadata, {
+    title: "C Chart 23",
+    icon: "Radar",
+    order: 45,
+    navigation: true,
+  });
+  assert.match(registry, /"slug":\s*"c-chart-23"/);
+  assert.match(registry, /"href":\s*"\/components\/c-chart-23"/);
+  assert.match(registry, /"title":\s*"C Chart 23"/);
+  assert.match(registry, /"icon":\s*"Radar"/);
+  assert.match(registry, /"order":\s*45/);
+  assert.match(registry, /"navigation":\s*true/);
+});
+
+test("keeps the reusable chart independent of shadcn UI primitives", () => {
+  assert.match(componentSource, /from "recharts"/);
+  assert.doesNotMatch(
+    componentSource,
+    /from ["'][^"']*(?:@\/components\/ui|shadcn)["']/i,
+  );
 });
