@@ -72,8 +72,10 @@ export default function Timeline({
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLOListElement>(null);
   const instanceId = useId().replace(/:/g, "");
-  const isMobile = useMediaQuery(MOBILE_QUERY, false);
-  const prefersReducedMotion = useMediaQuery(REDUCED_MOTION_QUERY, false);
+  // Use a conservative server snapshot: do not start non-essential motion
+  // until the browser has confirmed both viewport and motion preferences.
+  const isMobile = useMediaQuery(MOBILE_QUERY, true);
+  const prefersReducedMotion = useMediaQuery(REDUCED_MOTION_QUERY, true);
 
   const rootStyle = {
     "--timeline-text": textColor,
