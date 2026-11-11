@@ -137,6 +137,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "timeline",
+    "href": "/components/timeline",
+    "title": "Timeline",
+    "icon": "Clock3",
+    "order": 90,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",
