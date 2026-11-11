@@ -226,13 +226,15 @@ test("keeps the chart container responsive within its defined chart height", () 
   const html = renderToStaticMarkup(React.createElement(Pattern));
   const styles = readFileSync(componentStylesPath, "utf8");
   const chartStyles = styles.match(/\.chart\s*\{([^}]+)\}/)?.[1];
+  const cardStyles = styles.match(/\.card\s*\{([^}]+)\}/)?.[1];
 
   assert.match(html, /data-responsive-width="100%"/);
   assert.match(html, /data-responsive-height="100%"/);
   assert.ok(chartStyles, "chart CSS block should exist");
+  assert.ok(cardStyles, "card CSS block should exist");
   assert.match(chartStyles, /width:\s*100%/);
   assert.match(chartStyles, /height:\s*292px/);
-  assert.match(chartStyles, /min-width:\s*0/);
+  assert.match(cardStyles, /min-width:\s*0/);
 });
 
 test("renders the showcase route and mounts the reusable chart", () => {
@@ -263,6 +265,7 @@ test("renders the showcase route and mounts the reusable chart", () => {
     module: routeModule,
     exports: routeModule.exports,
     require(specifier) {
+      if (specifier === "react/jsx-runtime") return jsxRuntime;
       if (specifier === "next/link") {
         return ({ href, children, ...props }) =>
           jsxRuntime.jsx("a", { href, ...props, children });
