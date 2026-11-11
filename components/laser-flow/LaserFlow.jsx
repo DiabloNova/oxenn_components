@@ -439,13 +439,13 @@ export const LaserFlow = ({
   speed = 1.5,
   seed = 3,
   mouseInteraction = true,
-  revealImage,
+  revealImage = null,
   revealRadius = 220,
   revealOpacity = 0.6,
   intro = true,
   theme = 'dark',
   paused = false,
-  dpr,
+  dpr = null,
   ...rest
 }) => {
   const containerRef = useRef(null);
