@@ -261,14 +261,16 @@ test("renders the showcase route and mounts the reusable chart", () => {
     ]),
   );
 
+  const Link = ({ href, children, ...props }) =>
+    jsxRuntime.jsx("a", { href, ...props, children });
+
   vm.runInNewContext(compiledRoute, {
     module: routeModule,
     exports: routeModule.exports,
     require(specifier) {
       if (specifier === "react/jsx-runtime") return jsxRuntime;
       if (specifier === "next/link") {
-        return ({ href, children, ...props }) =>
-          jsxRuntime.jsx("a", { href, ...props, children });
+        return { __esModule: true, default: Link };
       }
       if (specifier === "lucide-react") return icons;
       if (specifier === "@/components/c-chart-23/Chart23") {
