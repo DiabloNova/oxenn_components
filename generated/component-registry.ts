@@ -97,6 +97,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "lanyard",
+    "href": "/components/lanyard",
+    "title": "Lanyard",
+    "icon": "IdCard",
+    "order": 65,
+    "navigation": true
+  },
+  {
     "slug": "split-flap-text",
     "href": "/components/split-flap-text",
     "title": "Split Flap Text",

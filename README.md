@@ -53,6 +53,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Option Wheel:** `/components/option-wheel` — curved kinetic selector with pointer, wheel, and keyboard interaction.
 - **Text Loop:** `/components/text-loop` — animated SVG text paths with configurable shapes, ribbons, drag momentum, hover pause, and scroll boost.
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
+- **Lanyard:** `/components/lanyard` — a physics-driven 3D ID badge with a woven strap, drag-and-release interaction, and tap-to-flip card faces.
 
 Open the hamburger menu on the home page to navigate to all component showcases.
 
@@ -326,6 +327,7 @@ The script publishes only the reusable component source to `oxenn-components-dis
 ```bash
 npm run check:registry
 npm run test:registry
+npm test
 npm run lint
 npm run typecheck
 npm run build
@@ -382,3 +384,29 @@ import Aurora from "@/components/aurora/Aurora";
   />
 </div>
 ```
+
+## Lanyard
+
+The component source is based on the official [React Bits Lanyard JS/CSS registry item](https://github.com/DavidHDev/react-bits/blob/main/public/r/Lanyard-JS-CSS.json). The Three.js implementation lives in `components/lanyard/` and is demonstrated at `/components/lanyard`.
+
+```tsx
+import Lanyard from "@/components/lanyard/Lanyard";
+
+export default function LanyardExample() {
+  return (
+    <div style={{ width: "100%", height: 600 }}>
+      <Lanyard
+        frontImage="/lanyard-front.jpg"
+        backImage="/lanyard-back.svg"
+        orientation="portrait"
+        finish="glossy"
+        metal="graphite"
+        interactive
+        intro
+      />
+    </div>
+  );
+}
+```
+
+The showcase uses the supplied portrait on the front and an Oxenn mark on the reverse. Both card images are local assets in `public/`; a strap texture is optional.
