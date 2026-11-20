@@ -74,9 +74,11 @@ git pull --ff-only origin main
 bash scripts/publish-components-subtree.sh
 ```
 
-The script creates a filtered Git history containing only `components/` and pushes it to the `oxenn-components-dist` branch. It requires the `git subtree` command to be installed, refuses to publish from a non-main branch or a dirty working tree, fetches `origin/main` (or the configured remote's `main`) and requires the local commit to match it exactly. The distribution branch is updated with a normal fast-forward-only push, not a force-push: the existing remote tip must be an ancestor of the generated subtree commit (or already equal to it). If the branch contains a manual edit, a bad publication, or any other divergent history, the push is rejected instead of overwriting that history; inspect and deliberately reconcile the branch rather than bypassing the rejection. For the same atomic push, the script also sends the unchanged source `main` commit as a no-op refspec guarded by `--force-with-lease`. That lease is only a concurrency check to ensure remote `main` has not moved since validation; it does not rewrite `main`.
+The distribution branch `oxenn-components-dist` is a **component-only snapshot branch**. Its initial commit contains the contents of `components/` at the repository root. Each later publication creates one new commit whose tree is the latest `components/` directory and whose parent is the previous distribution snapshot. This produces a linear, fast-forward-only history that Git Subtree can consume with `--squash`, while keeping showcase routes, generated registries, and the rest of the source application out of the distribution branch.
 
-The distribution branch is generated output. Do not edit it directly. Changes belong in normal component branches and are published only after those changes land on `main`.
+The publisher verifies that the working tree is clean, the local branch is `main`, and local `main` exactly matches the remote `main`. It also checks that the distribution branch has not changed during publication. The atomic push uses leases for both refs and never force-pushes or rewrites either branch. If the distribution branch is missing or has diverged, publication stops; inspect and deliberately reconcile the branch rather than bypassing the rejection.
+
+The distribution branch is generated output. Do not edit it directly. Changes belong in normal component branches and are published only after those changes land on `main`. The snapshot commit does not carry the source application's full commit history; the maintained distribution history is the sequence of published component snapshots.
 
 ## 4. First import into Oxenn
 

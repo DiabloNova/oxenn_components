@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Publish only the reusable components/ subtree, never the showcase application.
-# Run this from a complete, clean checkout of oxenn_components/main.
+# Publish a complete snapshot of the reusable components/ tree.
+# Run from a clean, up-to-date checkout of oxenn_components/main.
 
 SOURCE_BRANCH="main"
 SOURCE_PREFIX="components"
@@ -19,38 +19,50 @@ cd "$ROOT"
 
 CURRENT_BRANCH="$(git branch --show-current)"
 [[ "$CURRENT_BRANCH" == "$SOURCE_BRANCH" ]] || fail "expected branch '$SOURCE_BRANCH', found '$CURRENT_BRANCH'."
-
 [[ -z "$(git status --porcelain)" ]] || fail "working tree is not clean; commit or discard local changes first."
 [[ -d "$SOURCE_PREFIX" ]] || fail "source directory '$SOURCE_PREFIX' does not exist."
 git remote get-url "$REMOTE" >/dev/null 2>&1 || fail "Git remote '$REMOTE' is not configured."
 
-# A shallow checkout cannot preserve the complete component history in subtree split.
-IS_SHALLOW="$(git rev-parse --is-shallow-repository 2>/dev/null)" || fail "could not determine whether this repository is shallow."
-[[ "$IS_SHALLOW" == "false" ]] || fail "shallow repositories are not supported; fetch the complete history before publishing."
-
+# Verify that the local source is exactly the current remote main.
 git fetch "$REMOTE" "$SOURCE_BRANCH" --quiet || fail "could not fetch $REMOTE/$SOURCE_BRANCH."
 LOCAL_HEAD="$(git rev-parse HEAD)"
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD)"
 [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]] || fail "local main must exactly match $REMOTE/$SOURCE_BRANCH; run git pull --ff-only and retry."
 
-# Split the exact source commit that was verified above.
-SPLIT_SHA="$(git subtree split --prefix="$SOURCE_PREFIX" "$LOCAL_HEAD")" || fail "git subtree split failed; ensure git-subtree is installed."
-[[ -n "$SPLIT_SHA" ]] || fail "git subtree split returned an empty commit."
+# The distribution branch is a linear sequence of component-only snapshots.
+# Its initial commit contains the components/ tree as its repository root.
+git fetch "$REMOTE" "$DIST_BRANCH" --quiet || fail "could not fetch $REMOTE/$DIST_BRANCH; initialize the distribution branch first."
+DIST_BASE_SHA="$(git rev-parse FETCH_HEAD)"
+DIST_BASE_TREE="$(git rev-parse "$DIST_BASE_SHA^{tree}")"
+COMPONENT_TREE="$(git rev-parse "$LOCAL_HEAD:$SOURCE_PREFIX")"
 
-# Re-read main immediately before pushing. The atomic push below also includes
-# main as a no-op refspec with a lease, closing the remaining TOCTOU window:
-# if main moves after this check, the server rejects the entire atomic push.
-LATEST_REMOTE_LINE="$(git ls-remote "$REMOTE" "refs/heads/$SOURCE_BRANCH")" || fail "could not revalidate $REMOTE/$SOURCE_BRANCH."
-LATEST_REMOTE_HEAD="${LATEST_REMOTE_LINE%%[[:space:]]*}"
-[[ "$LATEST_REMOTE_HEAD" == "$LOCAL_HEAD" ]] || fail "$REMOTE/$SOURCE_BRANCH changed during subtree generation; fetch, fast-forward main, and retry."
+if [[ "$DIST_BASE_TREE" == "$COMPONENT_TREE" ]]; then
+  printf 'No component changes to publish; %s is already current.\n' "$REMOTE/$DIST_BRANCH"
+  exit 0
+fi
 
-# Update the distribution branch with a normal push, never a force update.
-# Git accepts this only when the remote distribution tip is an ancestor of
-# SPLIT_SHA (or already equals it). A divergent/manual edit or bad publication
-# is rejected rather than silently discarded. The atomic source-main no-op
-# refspec uses a lease only to ensure main has not moved since validation.
-git push --atomic "--force-with-lease=refs/heads/$SOURCE_BRANCH:$LOCAL_HEAD" "$REMOTE" \
-  "$SPLIT_SHA:refs/heads/$DIST_BRANCH" \
+# Revalidate both refs immediately before publishing. The atomic push also
+# uses leases so a concurrent main or distribution-branch update is rejected.
+LATEST_MAIN_LINE="$(git ls-remote "$REMOTE" "refs/heads/$SOURCE_BRANCH")" || fail "could not revalidate $REMOTE/$SOURCE_BRANCH."
+LATEST_MAIN="${LATEST_MAIN_LINE%%[[:space:]]*}"
+[[ "$LATEST_MAIN" == "$LOCAL_HEAD" ]] || fail "$REMOTE/$SOURCE_BRANCH changed during publication; fetch and fast-forward main, then retry."
+LATEST_DIST_LINE="$(git ls-remote "$REMOTE" "refs/heads/$DIST_BRANCH")" || fail "could not revalidate $REMOTE/$DIST_BRANCH."
+LATEST_DIST="${LATEST_DIST_LINE%%[[:space:]]*}"
+[[ "$LATEST_DIST" == "$DIST_BASE_SHA" ]] || fail "$REMOTE/$DIST_BRANCH changed during publication; fetch it and retry."
+
+SNAPSHOT_SHA="$(git -c user.name="${GIT_AUTHOR_NAME:-Oxenn Components Publisher}" \
+  -c user.email="${GIT_AUTHOR_EMAIL:-121438027+DiabloNova@users.noreply.github.com}" \
+  commit-tree "$COMPONENT_TREE" -p "$DIST_BASE_SHA" \
+  -m "chore: publish components snapshot from $LOCAL_HEAD")" || fail "could not create the component snapshot commit."
+
+# The main ref is sent as a no-op guarded by a lease. The distribution ref is
+# a normal descendant update; neither ref is force-pushed or rewritten.
+git push --atomic \
+  "--force-with-lease=refs/heads/$SOURCE_BRANCH:$LOCAL_HEAD" \
+  "--force-with-lease=refs/heads/$DIST_BRANCH:$DIST_BASE_SHA" \
+  "$REMOTE" \
+  "$SNAPSHOT_SHA:refs/heads/$DIST_BRANCH" \
   "$LOCAL_HEAD:refs/heads/$SOURCE_BRANCH"
 
-printf 'Published %s from %s@%s to %s/%s\n' "$SOURCE_PREFIX" "$SOURCE_BRANCH" "$LOCAL_HEAD" "$REMOTE" "$DIST_BRANCH"
+printf 'Published %s@%s to %s/%s at %s\n' \
+  "$SOURCE_PREFIX" "$LOCAL_HEAD" "$REMOTE" "$DIST_BRANCH" "$SNAPSHOT_SHA"
