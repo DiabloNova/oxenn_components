@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import WorkflowBlueprint, { type WorkflowApp, type WorkflowGraph } from "@/components/ui/interactive-workflow-blueprint";
 
 const graph: WorkflowGraph = {
@@ -46,6 +47,6 @@ export default function WorkflowBlueprintDemo() {
         "--color-border": "light-dark(#b1bed3,#596979)", "--color-primary": "light-dark(#007647,#2ff59b)",
         "--color-primary-foreground": "light-dark(#ffffff,#08120d)", "--color-chart-2": "light-dark(#087e55,#62e6a8)",
         "--color-chart-3": "light-dark(#7041b0,#bca7ff)",
-      } as React.CSSProperties)} />
+      } as CSSProperties)} />
   </div>;
 }
