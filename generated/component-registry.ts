@@ -73,6 +73,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "finance-bento",
+    "href": "/components/finance-bento",
+    "title": "Finance Bento",
+    "icon": "Blocks",
+    "order": 46,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",
