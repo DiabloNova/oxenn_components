@@ -2,10 +2,8 @@
 
 import {
   AnimatePresence,
-  animate,
   motion,
   useInView,
-  useMotionValue,
   useReducedMotion,
 } from "framer-motion";
 import {
@@ -43,6 +41,7 @@ const DEFAULT_PALETTE: [string, string, string, string, string] = [
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAY_MS = 86_400_000;
+const WEEK_COUNT = 53;
 
 function makeDemoData(end: Date): number[] {
   let seed = 2026;
@@ -100,11 +99,11 @@ export default function ContributionSkyline({
   const [hovered, setHovered] = useState<number | null>(null);
   const [streak, setStreak] = useState<Streak>(null);
   const [tipVisible, setTipVisible] = useState(false);
-  const [yaw, setYaw] = useState(0);
   const yawRef = useRef(0);
   const touched = useRef(false);
   const drag = useRef<{ x: number; startYaw: number; pointerId: number; moved: boolean } | null>(null);
-  const [tipPosition, setTipPosition] = useState<Point>({ x: 0, y: 0 });
+  const tipRef = useRef<HTMLDivElement>(null);
+  const cellPolygonsRef = useRef<Array<{ index: number; points: Point[] }>>([]);
   const [soundReady, setSoundReady] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
 
@@ -154,8 +153,9 @@ export default function ContributionSkyline({
 
   const { days, total, longest, current, busiest, maxValue } = useMemo(() => {
     const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-    const count = 371;
-    const start = new Date(endDay.getTime() - (count - 1) * DAY_MS);
+    const lastRow = endDay.getDay();
+    const count = (WEEK_COUNT - 1) * 7 + lastRow + 1;
+    const start = new Date(endDay.getTime() - ((WEEK_COUNT - 1) * 7 + lastRow) * DAY_MS);
     const values = series.slice(-count);
     while (values.length < count) values.unshift(0);
     const positive = values.filter((value) => value > 0).sort((a, b) => a - b);
@@ -164,7 +164,7 @@ export default function ContributionSkyline({
     const days: Day[] = values.map((value, index) => {
       const date = new Date(start.getTime() + index * DAY_MS);
       const level = value <= 0 ? 0 : value <= cuts[0] ? 1 : value <= cuts[1] ? 2 : value <= cuts[2] ? 3 : 4;
-      return { date, value, level, week: Math.floor(index / 7), weekday: date.getDay() };
+      return { date, value, level, week: Math.floor(index / 7), weekday: index % 7 };
     });
     let bestStart = 0;
     let bestLength = 0;
@@ -199,7 +199,7 @@ export default function ContributionSkyline({
 
   const activeIndex = hovered ?? days.length - 1;
   const activeDay = hovered == null ? null : days[hovered];
-  const weekCount = 53;
+  const weekCount = WEEK_COUNT;
   const narrow = width < 600;
   const compact = width < 400;
 
@@ -249,6 +249,7 @@ export default function ContributionSkyline({
       const offsetX = padLeft + (w - padLeft - 8 - (maxX - minX) * scale) / 2 - minX * scale;
       const offsetY = padTop + (h - padTop - padBottom - (maxY - minY) * scale) / 2 - minY * scale;
       const screen = (point: Point): Point => ({ x: offsetX + point.x * scale, y: offsetY + point.y * scale });
+      cellPolygonsRef.current = projected.map((cell) => ({ index: cell.index, points: cell.points.map(screen) }));
       const ordered = [...projected].sort((a, b) => a.center.y - b.center.y);
       ordered.forEach(({ day, index, height, points }) => {
         const p = points.map(screen);
@@ -274,7 +275,7 @@ export default function ContributionSkyline({
           polygon(context, p);
           context.stroke();
           const center = screen(project(day.week + 0.5, day.weekday + 0.5, height + 0.3, yawAngle, pitch));
-          setTipPosition(center);
+          tipRef.current?.style.setProperty("transform", `translate(${center.x}px, ${center.y - 8}px) translate(-50%, -100%)`);
         }
       });
       context.globalAlpha = 1;
@@ -305,10 +306,18 @@ export default function ContributionSkyline({
     if (!rect) return null;
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const col = Math.max(0, Math.min(52, Math.floor((x / rect.width) * weekCount)));
-    const row = Math.max(0, Math.min(6, Math.floor((y / rect.height) * 7)));
-    const index = days.findIndex((day) => day.week === col && day.weekday === row);
-    return index < 0 ? null : index;
+    const point = { x, y };
+    for (let index = cellPolygonsRef.current.length - 1; index >= 0; index -= 1) {
+      const cell = cellPolygonsRef.current[index];
+      let inside = false;
+      for (let i = 0, j = cell.points.length - 1; i < cell.points.length; j = i++) {
+        const a = cell.points[i];
+        const b = cell.points[j];
+        if ((a.y > point.y) !== (b.y > point.y) && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+      }
+      if (inside) return cell.index;
+    }
+    return null;
   };
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -325,7 +334,6 @@ export default function ContributionSkyline({
       if (activeDrag.moved) {
         const nextYaw = Math.max(-40, Math.min(40, activeDrag.startYaw + delta * 0.32));
         yawRef.current = nextYaw;
-        setYaw(nextYaw);
         setHover(null);
         return;
       }
@@ -366,7 +374,7 @@ export default function ContributionSkyline({
 
   useEffect(() => {
     if (!autoplay || !inView || reducedMotion || touched.current) return;
-    const timer = window.setTimeout(() => changeView(!skyline), 3600);
+    const timer = window.setTimeout(() => setSkyline((current) => !current), 3600);
     return () => window.clearTimeout(timer);
   }, [autoplay, inView, reducedMotion, skyline]);
 
@@ -431,7 +439,7 @@ export default function ContributionSkyline({
         onBlur={() => setHover(null)}
       >
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />
-        <div className="pointer-events-none absolute left-0 top-0 z-10" style={{ transform: `translate(${tipPosition.x}px, ${tipPosition.y - 8}px) translate(-50%, -100%)` }}>
+        <div ref={tipRef} className="pointer-events-none absolute left-0 top-0 z-10">
           <AnimatePresence>
             {activeDay && tipVisible && (
               <motion.div
