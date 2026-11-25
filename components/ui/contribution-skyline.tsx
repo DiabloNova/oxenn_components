@@ -1,5 +1,6 @@
 "use client";
 
+import { Grid2X2, Building2, Flame, Trophy, Star } from "lucide-react";
 import {
   AnimatePresence,
   motion,
@@ -379,9 +380,9 @@ export default function ContributionSkyline({
 
   const streakDays = (range: { from: number; to: number }) => Math.max(0, range.to - range.from + 1);
   const chips = [
-    { id: "now" as const, label: "Current streak", value: `${streakDays(current)} days`, symbol: "🔥" },
-    { id: "long" as const, label: "Longest streak", value: `${streakDays(longest)} days`, symbol: "🏆" },
-    { id: "best" as const, label: "Busiest day", value: `${days[busiest]?.value ?? 0} on ${MONTHS[days[busiest]?.date.getMonth() ?? 0]} ${days[busiest]?.date.getDate() ?? 0}`, symbol: "✦" },
+    { id: "now" as const, label: "Current streak", value: `${streakDays(current)} days`, icon: Flame },
+    { id: "long" as const, label: "Longest streak", value: `${streakDays(longest)} days`, icon: Trophy },
+    { id: "best" as const, label: "Busiest day", value: `${days[busiest]?.value ?? 0} on ${MONTHS[days[busiest]?.date.getMonth() ?? 0]} ${days[busiest]?.date.getDate() ?? 0}`, icon: Star },
   ];
 
   return (
@@ -399,7 +400,8 @@ export default function ContributionSkyline({
           </p>
         </div>
         <div role="radiogroup" aria-label="Contribution chart view" className="flex shrink-0 rounded-full bg-[#f2f2f4] p-[3px]">
-          {[{ value: false, label: "Grid", icon: "▦" }, { value: true, label: "Skyline", icon: "▥" }].map((option) => {
+          {[{ value: false, label: "Grid", icon: Grid2X2 }, { value: true, label: "Skyline", icon: Building2 }].map((option) => {
+            const Icon = option.icon;
             const selected = skyline === option.value;
             return (
               <button
@@ -411,7 +413,7 @@ export default function ContributionSkyline({
                 onClick={() => changeView(option.value)}
                 className={`relative flex items-center gap-1.5 rounded-full px-3 py-[5px] text-[13px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/60 ${selected ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6e6e73] hover:text-[#1d1d1f]"}`}
               >
-                <span aria-hidden="true">{option.icon}</span>{!compact && option.label}
+                <Icon size={13} aria-hidden="true" />{!compact && option.label}
                 {compact && <span className="sr-only">{option.label}</span>}
               </button>
             );
@@ -459,7 +461,9 @@ export default function ContributionSkyline({
 
       <div className={`mt-4 flex flex-wrap items-center gap-2 ${narrow ? "" : "justify-between"}`}>
         <div className="flex flex-wrap gap-2">
-          {chips.map((chip) => (
+          {chips.map((chip) => {
+            const Icon = chip.icon;
+            return (
             <button
               key={chip.id}
               type="button"
@@ -472,11 +476,12 @@ export default function ContributionSkyline({
               onClick={() => setStreak((currentStreak) => currentStreak === chip.id ? null : chip.id)}
               className={`flex items-center gap-2 rounded-full py-1.5 pl-2 pr-3 text-[12.5px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/60 ${streak === chip.id ? "bg-[#1d1d1f] text-white" : "bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#ececef]"}`}
             >
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-white" aria-hidden="true">{chip.symbol}</span>
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-white" aria-hidden="true"><Icon size={11} /></span>
               {!compact && <span className={streak === chip.id ? "text-white/70" : "text-[#6e6e73]"}>{chip.label}</span>}
               <span className="font-semibold tabular-nums">{compact ? `${chip.label.split(" ")[0]} ${chip.value}` : chip.value}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
         {!narrow && (
           <div className="flex items-center gap-1.5 text-[11.5px] text-[#86868b]" aria-label="Contribution intensity legend">
