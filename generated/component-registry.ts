@@ -137,6 +137,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "interactive-workflow-blueprint",
+    "href": "/components/interactive-workflow-blueprint",
+    "title": "Interactive Workflow Blueprint",
+    "icon": "Workflow",
+    "order": 90,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",
