@@ -367,7 +367,6 @@ export default function ContributionSkyline({
     setTipVisible(false);
     if (!next) {
       yawRef.current = 0;
-      setYaw(0);
     }
     if (sound) playTone(next ? 880 : 440);
   };
