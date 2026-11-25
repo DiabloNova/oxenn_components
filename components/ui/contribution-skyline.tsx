@@ -81,7 +81,7 @@ export default function ContributionSkyline({
   palette = DEFAULT_PALETTE,
   noun = ["contribution", "contributions"],
   defaultSkyline = false,
-  sound = false,
+  sound = true,
   volume = 0.5,
   autoplay = false,
   className = "",
@@ -199,7 +199,6 @@ export default function ContributionSkyline({
 
   const activeIndex = hovered ?? days.length - 1;
   const activeDay = hovered == null ? null : days[hovered];
-  const weekCount = WEEK_COUNT;
   const narrow = width < 600;
   const compact = width < 400;
 
@@ -222,7 +221,7 @@ export default function ContributionSkyline({
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       context.clearRect(0, 0, w, h);
       const progress = reducedMotion ? (skyline ? 1 : 0) : Math.min(1, (now - startTime) / 900);
-      const blend = skyline ? progress : 1 - progress;
+      const blend = skyline ? progress : 0;
       const yawAngle = (yawRef.current - 14 * blend) * Math.PI / 180;
       const pitch = 0.88 * blend;
       const projected = days.map((day, index) => {
