@@ -10,6 +10,7 @@ import {
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -191,12 +192,12 @@ export default function ContributionSkyline({
     };
   }, [series, end]);
 
-  const streakContains = (index: number) => {
+  const streakContains = useCallback((index: number) => {
     if (streak === "long") return index >= longest.from && index <= longest.to;
     if (streak === "now") return index >= current.from && index <= current.to;
     if (streak === "best") return index === busiest;
     return true;
-  };
+  }, [streak, longest, current, busiest]);
 
   const activeIndex = hovered ?? days.length - 1;
   const activeDay = hovered == null ? null : days[hovered];
@@ -293,7 +294,7 @@ export default function ContributionSkyline({
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [days, inView, skyline, reducedMotion, narrow, palette, maxValue, hovered, streak, longest, current, busiest]);
+  }, [days, inView, skyline, reducedMotion, narrow, palette, maxValue, hovered, streak, longest, current, busiest, streakContains]);
 
   const setHover = (index: number | null) => {
     setHovered(index);
