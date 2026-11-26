@@ -51,7 +51,7 @@ function dateLabel(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+    : date.toLocaleDateString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
 }
 
 function pointList(values: number[], width: number, height: number, min?: number, max?: number) {
@@ -121,7 +121,7 @@ export function FinanceBento({
   const history = data.history ?? [];
   const current = history[history.length - 1];
   const total = current ? totalOf(current) : 0;
-  const periodCount = period === "1M" ? 2 : period === "3M" ? 4 : 12;
+  const periodCount = period === "1M" ? 2 : period === "3M" ? 4 : 13;
   const visibleHistory = period === "All" ? history : history.slice(-periodCount);
   const periodStartTotal = visibleHistory[0] ? totalOf(visibleHistory[0]) : total;
   const change = periodStartTotal ? ((total - periodStartTotal) / periodStartTotal) * 100 : 0;
@@ -225,7 +225,7 @@ export function FinanceBento({
         <article className={[styles.card, styles.kpi, styles.returnCard].join(" ")}>
           <span className={styles.eyebrow}>PORTFOLIO RETURN</span>
           <strong className={styles.kpiValue}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</strong>
-          <span className={styles.kpiFoot}>Compared with previous month-end</span>
+          <span className={styles.kpiFoot}>{period === "All" ? "Since first record" : "Over the last " + period}</span>
         </article>
         <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
           <span className={styles.eyebrow}>FREE CASH</span>
