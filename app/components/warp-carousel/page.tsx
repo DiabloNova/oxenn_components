@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { WarpCarousel } from "@/components/ui/warp-carousel";
+import { WarpCarousel } from "@/components/warp-carousel";
 
 /** Warp Carousel filling the preview. */
 export default function WarpCarouselDemo() {
