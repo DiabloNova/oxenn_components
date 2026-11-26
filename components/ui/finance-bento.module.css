@@ -6,7 +6,7 @@
 .heading h1 span{display:block;margin-top:5px;color:var(--subtle);font-size:12px;font-weight:500;letter-spacing:0}
 .controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .segment{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.075)}
-.segment button{height:29px;min-width:42px;padding:0 10px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:600 11px inherit;cursor:pointer;transition:background .2s,color .2s}
+.segment button{height:29px;min-width:42px;padding:0 10px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:600 11px ui-sans-serif,system-ui,sans-serif;cursor:pointer;transition:background .2s,color .2s}
 .segment button[aria-pressed=true]{background:#fff;color:#101114}
 .segment button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .avatar{width:38px;height:38px;flex:0 0 auto;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #ffffff2b}
@@ -91,7 +91,7 @@
 .goal{margin-top:12px}
 .goal>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:11px}
 .goal>div:first-child span{font:10px "Geist Mono",ui-monospace,monospace}
-.goal small{color:var(--muted);font:10px inherit}
+.goal small{color:var(--muted);font:10px ui-sans-serif,system-ui,sans-serif}
 .progressTrack{height:6px;margin-top:8px;overflow:hidden;border-radius:8px;background:#ffffff25}
 .progressTrack i{display:block;height:100%;border-radius:8px;background:var(--accent)}
 .empty{color:var(--muted);font-size:12px}
