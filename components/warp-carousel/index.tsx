@@ -980,7 +980,7 @@ interface Live {
   v: number;
   mode: "rest" | "spin" | "drag" | "spring" | "fade";
   nextAuto: number;
-  autoPending: boolean;
+  autoPendingIndex: number | null;
   fadeFrom: number;
   fadeT0: number;
   dragX: number;
@@ -1040,7 +1040,7 @@ export function WarpCarousel({
     v: 0,
     mode: "rest",
     nextAuto: Infinity,
-    autoPending: false,
+    autoPendingIndex: null,
     fadeFrom: current,
     fadeT0: 0,
     dragX: 0,
@@ -1057,9 +1057,13 @@ export function WarpCarousel({
   const handles = React.useRef<{ kick: () => void; draw: () => void }>({ kick: () => {}, draw: () => {} });
 
   const lastIndex = React.useRef(current);
-  const request = React.useCallback((next: number) => {
+  const request = React.useCallback((next: number, fromAuto = false) => {
     const p = props.current;
-    if (p.onIndexChange) p.onIndexChange(mod(next, p.realCount));
+    const normalized = mod(next, p.realCount);
+    const expectedIndex = p.controlled ? normalized : next;
+    live.current.autoPendingIndex =
+      fromAuto && expectedIndex !== lastIndex.current ? expectedIndex : null;
+    if (p.onIndexChange) p.onIndexChange(normalized);
     if (!p.controlled) setInner(next);
   }, []);
 
@@ -1069,8 +1073,8 @@ export function WarpCarousel({
     const prev = lastIndex.current;
     lastIndex.current = current;
     if (prev === current) return;
-    const fromAuto = L.autoPending;
-    L.autoPending = false;
+    const fromAuto = L.autoPendingIndex === current;
+    L.autoPendingIndex = null;
     let delta = current - prev;
     if (fromAuto) {
       delta = props.current.stepN;
@@ -1243,8 +1247,7 @@ export function WarpCarousel({
       const p = props.current;
       if (p.seconds === undefined && p.autoplay && L.mode !== "drag" && L.mode !== "spring" && now >= L.nextAuto) {
         L.nextAuto = Math.max(L.nextAuto + p.gap, now + p.gap * 0.5);
-        L.autoPending = true;
-        request(lastIndex.current + p.stepN);
+        request(lastIndex.current + p.stepN, true);
       }
       draw(now);
       const busy = p.seconds === undefined && (L.mode !== "rest" || p.autoplay);
@@ -1358,6 +1361,7 @@ export function WarpCarousel({
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (seconds !== undefined || e.button > 0) return;
     const L = live.current;
+    L.autoPendingIndex = null;
     e.currentTarget.setPointerCapture?.(e.pointerId);
     L.dragTo = L.mode === "spin" || L.mode === "spring"
       ? L.to
@@ -1416,10 +1420,11 @@ export function WarpCarousel({
     L.mode = "spring";
     L.lastT = now;
     const next = Math.round(target - DRIFT);
-    if (next !== lastIndex.current) {
-      const p = props.current;
-      lastIndex.current = p.controlled ? mod(next, p.realCount) : next;
-      if (p.onIndexChange) p.onIndexChange(mod(next, p.realCount));
+    const p = props.current;
+    const reportedNext = p.controlled ? mod(next, p.realCount) : next;
+    if (reportedNext !== lastIndex.current) {
+      lastIndex.current = reportedNext;
+      if (p.onIndexChange) p.onIndexChange(reportedNext);
       if (!p.controlled) setInner(next);
     }
     handles.current.kick();
