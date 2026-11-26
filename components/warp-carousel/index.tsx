@@ -1424,7 +1424,7 @@ export function WarpCarousel({
     const reportedNext = p.controlled ? mod(next, p.realCount) : next;
     if (reportedNext !== lastIndex.current) {
       lastIndex.current = reportedNext;
-      if (p.onIndexChange) p.onIndexChange(reportedNext);
+      if (p.onIndexChange) p.onIndexChange(mod(next, p.realCount));
       if (!p.controlled) setInner(next);
     }
     handles.current.kick();
