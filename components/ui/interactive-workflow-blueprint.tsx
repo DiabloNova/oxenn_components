@@ -122,7 +122,7 @@ export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflo
     const picked = changes.find(c => c.type === "select" && c.selected); if (picked && "id" in picked) setSelected(picked.id);
   }, []);
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
-    if (changes.some(change => change.type === "remove" || change.type === "add" || change.type === "replace" || (change.type === "position" && change.dragging === false))) changed.current = true;
+    if (changes.some(change => change.type === "remove" || change.type === "add" || change.type === "replace")) changed.current = true;
     setGraph(g => ({ ...g, edges: applyEdgeChanges(changes, g.edges) }));
   }, []);
   const focusNode = (id: string) => { setSelected(id); setEditing(null); setGraph(g => ({ ...g, nodes: g.nodes.map(n => ({ ...n, selected: n.id === id })) })); const node = graph.nodes.find(n => n.id === id); if (node) void flow?.setCenter(node.position.x + 98, node.position.y + 84, { zoom: 1 }); };
