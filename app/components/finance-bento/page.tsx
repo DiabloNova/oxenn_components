@@ -14,6 +14,7 @@ const history: FinanceBentoData["history"] = Array.from({ length: 36 }, (_, inde
 
 const data: FinanceBentoData = {
   history,
+  availableCash: 9200,
   payments: [
     { name: "Rent", date: "Nov 1", amount: 1800 },
     { name: "Index fund · auto-buy", date: "Nov 3", amount: 500 },
@@ -37,9 +38,9 @@ const data: FinanceBentoData = {
     ],
   },
   crypto: [
-    { name: "Bitcoin", symbol: "BTC", share: 0.62, change: "+3.1%", ohlc: [[66.1, 67.0, 65.8, 66.8], [66.8, 67.6, 66.5, 67.4], [67.4, 67.9, 66.9, 67.1], [67.1, 68.2, 67.0, 68.0], [68.0, 68.9, 67.8, 68.7], [68.7, 69.1, 68.1, 68.4], [68.4, 69.6, 68.3, 69.4]] },
-    { name: "Ethereum", symbol: "ETH", share: 0.26, change: "−0.8%", ohlc: [[3.52, 3.58, 3.44, 3.47], [3.47, 3.55, 3.4, 3.53], [3.53, 3.56, 3.38, 3.41], [3.41, 3.5, 3.36, 3.48], [3.48, 3.51, 3.39, 3.43], [3.43, 3.49, 3.37, 3.46], [3.46, 3.52, 3.42, 3.44]] },
-    { name: "Solana", symbol: "SOL", share: 0.12, change: "+6.4%", ohlc: [[142, 149, 139, 147], [147, 151, 141, 143], [143, 156, 142, 154], [154, 158, 147, 149], [149, 162, 148, 160], [160, 166, 155, 157], [157, 171, 156, 168]] },
+    { name: "Bitcoin", symbol: "BTC", share: 0.62, change: 3.1, ohlc: [[66.1, 67.0, 65.8, 66.8], [66.8, 67.6, 66.5, 67.4], [67.4, 67.9, 66.9, 67.1], [67.1, 68.2, 67.0, 68.0], [68.0, 68.9, 67.8, 68.7], [68.7, 69.1, 68.1, 68.4], [68.4, 69.6, 68.3, 69.4]] },
+    { name: "Ethereum", symbol: "ETH", share: 0.26, change: -0.8, ohlc: [[3.52, 3.58, 3.44, 3.47], [3.47, 3.55, 3.4, 3.53], [3.53, 3.56, 3.38, 3.41], [3.41, 3.5, 3.36, 3.48], [3.48, 3.51, 3.39, 3.43], [3.43, 3.49, 3.37, 3.46], [3.46, 3.52, 3.42, 3.44]] },
+    { name: "Solana", symbol: "SOL", share: 0.12, change: 6.4, ohlc: [[142, 149, 139, 147], [147, 151, 141, 143], [143, 156, 142, 154], [154, 158, 147, 149], [149, 162, 148, 160], [160, 166, 155, 157], [157, 171, 156, 168]] },
   ],
   stocks: { days: ["Mon", "Tue", "Wed", "Thu", "Fri"], values: [2.1, 1.2, 3.4, 1.9, 4.6] },
 };
@@ -50,6 +51,7 @@ export default function FinanceBentoPage() {
       <div style={{ width: "100%", maxWidth: 1440, margin: "0 auto" }}>
         <FinanceBento
           data={data}
+          currencyRates={{ EUR: 0.92 }}
           title="Overview"
           subtitle="Illustrative portfolio · Sample data only"
           credit
