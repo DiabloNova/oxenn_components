@@ -101,3 +101,10 @@
 @media(max-width:700px){.header{align-items:flex-start;flex-wrap:wrap}.heading{flex:1 0 100%}.controls{width:100%;justify-content:space-between}.netWorth{min-height:370px}.allocation{grid-column:span 12;grid-row:auto;min-height:345px}.cashflow,.cryptoCard,.stocksCard{grid-column:span 12}.paymentsCard,.goalsCard{grid-column:span 12}.kpi{grid-column:span 6}.card{padding:18px}}
 @media(max-width:430px){.kpi{grid-column:span 12}.segment button{min-width:36px;padding:0 8px}.cryptoRow{grid-template-columns:minmax(70px,1fr) 66px minmax(70px,auto);gap:6px}.heroValue{font-size:31px}}
 @media(prefers-reduced-motion:reduce){.segment button,.stockTrack i{transition:none}}
+
+
+/* Rebalance the three remaining KPI cards when Free Cash is omitted. */
+.kpiNoCash{grid-column:span 4}
+@media(max-width:1100px){.kpiNoCash{grid-column:span 6}.goalsCard.kpiNoCash{grid-column:span 12}}
+@media(max-width:700px){.kpiNoCash{grid-column:span 6}.goalsCard.kpiNoCash{grid-column:span 12}}
+@media(max-width:430px){.kpiNoCash{grid-column:span 12}}
