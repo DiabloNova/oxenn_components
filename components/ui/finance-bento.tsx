@@ -154,6 +154,8 @@ export function FinanceBento({
   const exchangeRate = activeCurrency === baseCurrency ? 1 : currencyRates[activeCurrency] ?? 1;
   const money = (value: number, compact = false) => formatMoney(value, activeCurrency, compact, exchangeRate);
   const gradientId = React.useId().replace(/:/g, "");
+  const hasAvailableCash = typeof data.availableCash === "number" && Number.isFinite(data.availableCash);
+  const kpiWithoutCashClass = hasAvailableCash ? "" : styles.kpiNoCash;
   const history = data.history ?? [];
   const current = history[history.length - 1];
   const total = current ? totalOf(current) : 0;
@@ -275,24 +277,24 @@ export function FinanceBento({
           </div>
         </article>
 
-        <article className={[styles.card, styles.kpi, styles.returnCard].join(" ")}>
+        <article className={[styles.card, styles.kpi, styles.returnCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
           <span className={styles.eyebrow}>PORTFOLIO RETURN</span>
           <strong className={styles.kpiValue}>{change === null ? "—" : (change >= 0 ? "+" : "") + change.toFixed(1) + "%"}</strong>
           <span className={styles.kpiFoot}>{returnFoot}</span>
         </article>
-        {typeof data.availableCash === "number" && Number.isFinite(data.availableCash) && (
-          <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
+        {hasAvailableCash && (
+          <article className={[styles.card, styles.kpi, styles.glassCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
             <span className={styles.eyebrow}>FREE CASH</span>
             <strong className={styles.kpiValue}>{money(data.availableCash, true)}</strong>
             <span className={styles.kpiFoot}>Available balance</span>
           </article>
         )}
-        <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
+        <article className={[styles.card, styles.kpi, styles.glassCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
           <span className={styles.eyebrow}>NEXT PAYMENTS</span>
           <strong className={styles.kpiValue}>{money(payments.reduce((sum, item) => sum + item.amount, 0), true)}</strong>
           <span className={styles.kpiFoot}>{payments.length} scheduled payments</span>
         </article>
-        <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
+        <article className={[styles.card, styles.kpi, styles.glassCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
           <span className={styles.eyebrow}>SAVINGS GOALS</span>
           <strong className={styles.kpiValue}>{goals.length} active</strong>
           <span className={styles.kpiFoot}>{goals.filter((goal) => goal.progress >= 1).length} completed</span>
@@ -358,7 +360,7 @@ export function FinanceBento({
           </div>
         </article>
 
-        <article className={[styles.card, styles.goalsCard].join(" ")}>
+        <article className={[styles.card, styles.goalsCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
           <div className={styles.cardHead}><h2>Goals</h2><span className={styles.pill}>{goals.length} active</span></div>
           <div className={styles.goalList}>
             {goals.map((goal) => <div className={styles.goal} key={goal.name}>
