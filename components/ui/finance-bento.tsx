@@ -4,20 +4,26 @@ import * as React from "react";
 import styles from "./finance-bento.module.css";
 
 export interface FinanceBentoData {
-  /** Month-end balances by asset class, oldest first. */
+  /** Month-end balances by asset class, oldest first; monetary values use the base currency. */
   history: { date: string; fiat: number; stocks: number; crypto: number }[];
+  /** Available cash in the base currency. Omit this value to hide the Free Cash KPI. */
+  availableCash?: number;
   payments: { name: string; date: string; amount: number }[];
   goals: { name: string; progress: number; target: number }[];
   /** Six months of income and spending, in thousands; first row is the latest year. */
   cashflow: { months: string[]; income: number[][]; spending: number[][] };
-  /** Each asset includes its share, 24h change and daily OHLC candles. */
-  crypto: { name: string; symbol: string; share: number; change: string; ohlc: number[][] }[];
+  /** Each asset includes its share, numeric 24h percentage change (e.g. 3.1 or -0.8), and daily OHLC candles. */
+  crypto: { name: string; symbol: string; share: number; change: number; ohlc: number[][] }[];
   /** Weekly trading volume, in thousands. */
   stocks: { days: string[]; values: number[] };
 }
 
 export interface FinanceBentoProps {
   data: FinanceBentoData;
+  /** Currency in which all monetary values in data are supplied. Defaults to USD. */
+  baseCurrency?: Currency;
+  /** Multipliers from baseCurrency to each additional display currency. The base currency is always available at 1. */
+  currencyRates?: Partial<Record<Currency, number>>;
   title?: string;
   subtitle?: string;
   avatar?: string;
@@ -37,14 +43,33 @@ function totalOf(item: FinanceBentoData["history"][number]) {
   return item.fiat + item.stocks + item.crypto;
 }
 
-function formatMoney(value: number, currency: Currency, compact = false) {
-  const converted = value * (currency === "EUR" ? 0.92 : 1);
+function formatMoney(value: number, currency: Currency, compact = false, exchangeRate = 1) {
+  const converted = value * exchangeRate;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     notation: compact ? "compact" : "standard",
     maximumFractionDigits: compact ? 1 : 0,
   }).format(converted);
+}
+
+function monthSpan(start: string, end: string): number | null {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return null;
+  return Math.max(
+    0,
+    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12
+      + endDate.getUTCMonth() - startDate.getUTCMonth(),
+  );
+}
+
+function formatMonthSpan(months: number) {
+  return months + (months === 1 ? " month" : " months");
+}
+
+function formatPercentChange(value: number) {
+  return Number.isFinite(value) ? (value > 0 ? "+" : "") + value.toFixed(1) + "%" : "—";
 }
 
 function dateLabel(value: string) {
@@ -107,6 +132,8 @@ function Sparkline({ values, label }: { values: number[]; label: string }) {
 
 export function FinanceBento({
   data,
+  baseCurrency = "USD",
+  currencyRates = {},
   title = "Overview",
   subtitle = "",
   avatar,
@@ -116,7 +143,16 @@ export function FinanceBento({
   style,
 }: FinanceBentoProps) {
   const [period, setPeriod] = React.useState<Period>("1Y");
-  const [currency, setCurrency] = React.useState<Currency>("USD");
+  const [currency, setCurrency] = React.useState<Currency>(baseCurrency);
+  const supportedCurrencies: Currency[] = [
+    baseCurrency,
+    ...Object.entries(currencyRates)
+      .filter(([code, rate]) => code !== baseCurrency && typeof rate === "number" && Number.isFinite(rate) && rate > 0)
+      .map(([code]) => code as Currency),
+  ];
+  const activeCurrency = supportedCurrencies.includes(currency) ? currency : baseCurrency;
+  const exchangeRate = activeCurrency === baseCurrency ? 1 : currencyRates[activeCurrency] ?? 1;
+  const money = (value: number, compact = false) => formatMoney(value, activeCurrency, compact, exchangeRate);
   const gradientId = React.useId().replace(/:/g, "");
   const history = data.history ?? [];
   const current = history[history.length - 1];
@@ -124,7 +160,22 @@ export function FinanceBento({
   const periodCount = period === "1M" ? 2 : period === "3M" ? 4 : 13;
   const visibleHistory = period === "All" ? history : history.slice(-periodCount);
   const periodStartTotal = visibleHistory[0] ? totalOf(visibleHistory[0]) : total;
-  const change = periodStartTotal ? ((total - periodStartTotal) / periodStartTotal) * 100 : 0;
+  const periodSpanMonths = visibleHistory.length > 1
+    ? monthSpan(visibleHistory[0].date, visibleHistory[visibleHistory.length - 1].date)
+    : null;
+  const hasComparableHistory = periodSpanMonths !== null && periodSpanMonths > 0 && periodStartTotal !== 0;
+  const change = hasComparableHistory ? ((total - periodStartTotal) / periodStartTotal) * 100 : null;
+  const selectedMonths = period === "1M" ? 1 : period === "3M" ? 3 : period === "1Y" ? 12 : null;
+  const displayedPeriod = period === "All"
+    ? "all time"
+    : periodSpanMonths === null
+      ? "not enough data"
+      : periodSpanMonths === selectedMonths
+        ? period
+        : formatMonthSpan(periodSpanMonths);
+  const returnFoot = period === "All"
+    ? (hasComparableHistory ? "Since first record" : "Not enough data to calculate return")
+    : (hasComparableHistory ? "Over the last " + displayedPeriod : "Not enough data to calculate return");
   const maxTotal = Math.max(1, ...visibleHistory.map(totalOf));
   const fiatValues = visibleHistory.map((item) => item.fiat);
   const stockValues = visibleHistory.map((item) => item.fiat + item.stocks);
@@ -162,8 +213,8 @@ export function FinanceBento({
             ))}
           </div>
           <div className={styles.segment} role="group" aria-label="Display currency">
-            {(["USD", "EUR"] as Currency[]).map((item) => (
-              <button key={item} type="button" aria-pressed={currency === item} onClick={() => setCurrency(item)}>{item}</button>
+            {supportedCurrencies.map((item) => (
+              <button key={item} type="button" aria-pressed={activeCurrency === item} onClick={() => setCurrency(item)}>{item}</button>
             ))}
           </div>
           {avatar ? <img className={styles.avatar} src={avatar} alt={avatarAlt} /> : null}
@@ -173,10 +224,12 @@ export function FinanceBento({
       <div className={styles.grid}>
         <article className={[styles.card, styles.netWorth].join(" ")}>
           <div className={styles.cardHead}>
-            <div><span className={styles.eyebrow}>NET WORTH</span><div className={styles.heroValue}>{formatMoney(total, currency)}</div></div>
+            <div><span className={styles.eyebrow}>NET WORTH</span><div className={styles.heroValue}>{money(total)}</div></div>
             <div className={styles.changeBlock}>
-              <strong className={change >= 0 ? styles.positive : styles.negative}>{change >= 0 ? "↗ " : "↘ "}{Math.abs(change).toFixed(1)}%</strong>
-              <span>{period === "All" ? "all time" : period + " change"}</span>
+              <strong className={change === null ? undefined : change >= 0 ? styles.positive : styles.negative}>
+                {change === null ? "—" : (change >= 0 ? "↗ " : "↘ ") + Math.abs(change).toFixed(1) + "%"}
+              </strong>
+              <span>{displayedPeriod === "not enough data" ? displayedPeriod : displayedPeriod + " change"}</span>
             </div>
           </div>
           <div className={styles.legend}>
@@ -218,23 +271,25 @@ export function FinanceBento({
             </svg>
           </div>
           <div className={styles.allocationList}>
-            {allocation.map((item) => <div key={item.label}><i style={{ background: item.color }} /><span>{item.label}</span><b>{Math.round((item.value / (total || 1)) * 100)}%</b><strong>{formatMoney(item.value, currency, true)}</strong></div>)}
+            {allocation.map((item) => <div key={item.label}><i style={{ background: item.color }} /><span>{item.label}</span><b>{Math.round((item.value / (total || 1)) * 100)}%</b><strong>{money(item.value, true)}</strong></div>)}
           </div>
         </article>
 
         <article className={[styles.card, styles.kpi, styles.returnCard].join(" ")}>
           <span className={styles.eyebrow}>PORTFOLIO RETURN</span>
-          <strong className={styles.kpiValue}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</strong>
-          <span className={styles.kpiFoot}>{period === "All" ? "Since first record" : "Over the last " + period}</span>
+          <strong className={styles.kpiValue}>{change === null ? "—" : (change >= 0 ? "+" : "") + change.toFixed(1) + "%"}</strong>
+          <span className={styles.kpiFoot}>{returnFoot}</span>
         </article>
-        <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
-          <span className={styles.eyebrow}>FREE CASH</span>
-          <strong className={styles.kpiValue}>{formatMoney((current?.fiat ?? 0) * 0.42, currency, true)}</strong>
-          <span className={styles.kpiFoot}>Estimated available balance</span>
-        </article>
+        {typeof data.availableCash === "number" && Number.isFinite(data.availableCash) && (
+          <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
+            <span className={styles.eyebrow}>FREE CASH</span>
+            <strong className={styles.kpiValue}>{money(data.availableCash, true)}</strong>
+            <span className={styles.kpiFoot}>Available balance</span>
+          </article>
+        )}
         <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
           <span className={styles.eyebrow}>NEXT PAYMENTS</span>
-          <strong className={styles.kpiValue}>{formatMoney(payments.reduce((sum, item) => sum + item.amount, 0), currency, true)}</strong>
+          <strong className={styles.kpiValue}>{money(payments.reduce((sum, item) => sum + item.amount, 0), true)}</strong>
           <span className={styles.kpiFoot}>{payments.length} scheduled payments</span>
         </article>
         <article className={[styles.card, styles.kpi, styles.glassCard].join(" ")}>
@@ -254,12 +309,12 @@ export function FinanceBento({
             {spending.slice(0, 3).map((series, index) => <polyline key={"s" + index} points={cashflowPath(series, 1, 520, 220, cashflowMax)} fill="none" stroke="#ffd0e6" strokeOpacity={[1, 0.48, 0.25][index]} strokeWidth={index === 0 ? 2.5 : 1.6} strokeLinecap="round" strokeLinejoin="round" />)}
           </svg>
           <div className={styles.monthLabels}>{cashflowMonths.map((month) => <span key={month}>{month}</span>)}</div>
-          <div className={styles.netCash}>Net {formatMoney(latestIncome.reduce((sum, value, index) => sum + (value - (latestSpending[index] ?? 0)), 0) * 1000 / Math.max(1, latestIncome.length), currency, true)} / month</div>
+          <div className={styles.netCash}>Net {money(latestIncome.reduce((sum, value, index) => sum + (value - (latestSpending[index] ?? 0)), 0) * 1000 / Math.max(1, latestIncome.length), true)} / month</div>
         </article>
 
         <article className={[styles.card, styles.cryptoCard].join(" ")}>
           <div className={styles.cardHead}><h2>Crypto</h2><span className={styles.pill}>7 days</span></div>
-          <div className={styles.cryptoTotal}>{formatMoney(current?.crypto ?? 0, currency, true)}</div>
+          <div className={styles.cryptoTotal}>{money(current?.crypto ?? 0, true)}</div>
           <div className={styles.cryptoBar}>{crypto.map((coin) => <span key={coin.symbol} style={{ width: Math.max(0, coin.share) * 100 + "%" }} />)}</div>
           <div className={styles.cryptoShares}>{crypto.map((coin) => <span key={coin.symbol}>{coin.symbol} {Math.round(coin.share * 100)}%</span>)}</div>
           <div className={styles.cryptoList}>
@@ -268,7 +323,7 @@ export function FinanceBento({
               return <div className={styles.cryptoRow} key={coin.symbol}>
                 <div className={styles.assetName}><strong>{coin.name}</strong><span>{coin.symbol} · 7d</span></div>
                 <Sparkline values={closes} label={coin.name + " seven day price trend"} />
-                <div className={styles.assetValue}><strong>{formatMoney((current?.crypto ?? 0) * coin.share, currency, true)}</strong><span className={coin.change.startsWith("+") ? styles.positive : styles.negative}>{coin.change}</span></div>
+                <div className={styles.assetValue}><strong>{money((current?.crypto ?? 0) * coin.share, true)}</strong><span className={coin.change > 0 ? styles.positive : coin.change < 0 ? styles.negative : undefined}>{formatPercentChange(coin.change)}</span></div>
               </div>;
             })}
           </div>
@@ -276,7 +331,7 @@ export function FinanceBento({
 
         <article className={[styles.card, styles.stocksCard].join(" ")}>
           <div className={styles.cardHead}><h2>Stocks</h2><span className={styles.pill}>This week</span></div>
-          <div className={styles.stocksTotal}>{formatMoney(current?.stocks ?? 0, currency, true)}</div>
+          <div className={styles.stocksTotal}>{money(current?.stocks ?? 0, true)}</div>
           <span className={styles.cardSub}>Weekly trading volume</span>
           <div className={styles.stockBars}>
             {stockDays.map((day, index) => {
@@ -297,7 +352,7 @@ export function FinanceBento({
             {payments.map((payment, index) => <div className={styles.paymentRow} key={payment.name + payment.date}>
               <span className={styles.paymentIcon}>{payment.name.slice(0, 1).toUpperCase()}</span>
               <span className={styles.paymentName}><strong>{payment.name}</strong><small>{payment.date}</small></span>
-              <strong>{formatMoney(payment.amount, currency)}</strong>
+              <strong>{money(payment.amount)}</strong>
             </div>)}
             {payments.length === 0 && <p className={styles.empty}>No upcoming payments</p>}
           </div>
@@ -307,7 +362,7 @@ export function FinanceBento({
           <div className={styles.cardHead}><h2>Goals</h2><span className={styles.pill}>{goals.length} active</span></div>
           <div className={styles.goalList}>
             {goals.map((goal) => <div className={styles.goal} key={goal.name}>
-              <div><strong>{goal.name}</strong><span>{Math.round(Math.max(0, goal.progress) * 100)}% <small>of {formatMoney(goal.target, currency, true)}</small></span></div>
+              <div><strong>{goal.name}</strong><span>{Math.round(Math.max(0, goal.progress) * 100)}% <small>of {money(goal.target, true)}</small></span></div>
               <div className={styles.progressTrack}><i style={{ width: Math.min(100, Math.max(0, goal.progress * 100)) + "%" }} /></div>
             </div>)}
             {goals.length === 0 && <p className={styles.empty}>No active goals</p>}
