@@ -213,8 +213,8 @@ export default function ContributionSkyline({
   const compact = width < 400;
 
   useEffect(() => {
-    transitionStart.current = performance.now();
-  }, [skyline]);
+    if (inView) transitionStart.current = performance.now();
+  }, [skyline, inView]);
 
   useEffect(() => () => {
     const context = audioRef.current;
