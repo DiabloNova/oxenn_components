@@ -985,6 +985,7 @@ interface Live {
   fadeT0: number;
   dragX: number;
   dragP: number;
+  dragTo: number;
   downX: number;
   moved: boolean;
   lastT: number;
@@ -1012,13 +1013,15 @@ export function WarpCarousel({
   const wrapRef = React.useRef<HTMLDivElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const reduced = usePrefersReducedMotion();
+  const sourceCards = cards && cards.length ? cards : WARP_CAROUSEL_CARDS;
+  const cardsSignature = JSON.stringify(sourceCards) ?? "[]";
   const list = React.useMemo(() => {
-    const src = cards && cards.length ? cards : WARP_CAROUSEL_CARDS;
+    const src = JSON.parse(cardsSignature) as WarpCard[];
     const out: WarpCard[] = [];
     while (out.length < 4) out.push(...src);
     return out;
-  }, [cards]);
-  const realCount = cards && cards.length ? cards.length : WARP_CAROUSEL_CARDS.length;
+  }, [cardsSignature]);
+  const realCount = sourceCards.length;
   const N = list.length;
   const stepN = Math.max(1, Math.round(step));
   const gap = Math.max(0.5, interval);
@@ -1042,6 +1045,7 @@ export function WarpCarousel({
     fadeT0: 0,
     dragX: 0,
     dragP: 0,
+    dragTo: 0,
     downX: 0,
     moved: false,
     lastT: 0,
@@ -1065,11 +1069,16 @@ export function WarpCarousel({
     const prev = lastIndex.current;
     lastIndex.current = current;
     if (prev === current) return;
-    let delta = current - prev;
-    if (props.current.controlled && Math.abs(delta) > realCount / 2) delta -= Math.sign(delta) * realCount;
-    const now = performance.now() / 1000;
     const fromAuto = L.autoPending;
     L.autoPending = false;
+    let delta = current - prev;
+    if (fromAuto) {
+      delta = props.current.stepN;
+    } else if (props.current.controlled) {
+      delta = mod(delta, realCount);
+      if (delta > realCount / 2) delta -= realCount;
+    }
+    const now = performance.now() / 1000;
     if (props.current.reduced) {
       L.fadeFrom = L.P;
       L.P = Math.round(L.P) + delta;
@@ -1246,19 +1255,7 @@ export function WarpCarousel({
     };
     handles.current = { kick, draw: () => draw(performance.now() / 1000) };
 
-    // the reference opens mid-rest, a moment before its first spin
     const t0 = performance.now() / 1000;
-    if (props.current.autoplay && !props.current.reduced && props.current.seconds === undefined) {
-      L.from = current - props.current.stepN + DRIFT;
-      L.to = current + DRIFT;
-      L.t0 = t0 - REST_PHASE / 30;
-      L.n = STEP_FRAMES;
-      L.mode = "spin";
-      L.P = L.from + (L.to - L.from) * spin(REST_PHASE);
-      L.nextAuto = t0 + LEAD;
-    } else {
-      L.nextAuto = t0 + props.current.gap;
-    }
 
     resize();
     const ro = new ResizeObserver(() => {
@@ -1335,6 +1332,24 @@ export function WarpCarousel({
   }, [list, background, glow, warp, font, N]);
 
   React.useEffect(() => {
+    const L = live.current;
+    const t0 = performance.now() / 1000;
+    if (props.current.autoplay && !props.current.reduced && props.current.seconds === undefined) {
+      L.from = startIdx - props.current.stepN + DRIFT;
+      L.to = startIdx + DRIFT;
+      L.t0 = t0 - REST_PHASE / 30;
+      L.n = STEP_FRAMES;
+      L.mode = "spin";
+      L.P = L.from + (L.to - L.from) * spin(REST_PHASE);
+      L.nextAuto = t0 + LEAD;
+    } else {
+      L.nextAuto = t0 + props.current.gap;
+    }
+    handles.current.kick();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
     if (seconds !== undefined) handles.current.draw();
     else handles.current.kick();
   }, [seconds, autoplay, reduced]);
@@ -1344,6 +1359,9 @@ export function WarpCarousel({
     if (seconds !== undefined || e.button > 0) return;
     const L = live.current;
     e.currentTarget.setPointerCapture?.(e.pointerId);
+    L.dragTo = L.mode === "spin" || L.mode === "spring"
+      ? L.to
+      : Math.round(L.P - DRIFT) + DRIFT;
     L.mode = "drag";
     L.dragX = e.clientX;
     L.downX = e.clientX;
@@ -1373,23 +1391,34 @@ export function WarpCarousel({
     const now = performance.now() / 1000;
     L.nextAuto = now + gap;
     if (!L.moved) {
-      L.mode = "rest";
       const r = wrapRef.current!.getBoundingClientRect();
       const u = (e.clientX - r.left - r.width / 2) / Math.min(r.width / 720, r.height / 440);
-      if (u > 168) request(lastIndex.current + 1);
-      else if (u < -168) request(lastIndex.current - 1);
+      const currentSlot = Math.round(L.dragTo - DRIFT);
+      if (u > 168 || u < -168) {
+        L.P = L.dragTo;
+        L.mode = "rest";
+        L.v = 0;
+        const p = props.current;
+        lastIndex.current = p.controlled ? mod(currentSlot, p.realCount) : currentSlot;
+        request(currentSlot + (u > 168 ? 1 : -1));
+      } else {
+        L.to = L.dragTo;
+        L.mode = "spring";
+        L.v = 0;
+        L.lastT = now;
+        handles.current.kick();
+      }
       return;
     }
     if (now - L.lastT > 0.08) L.v = 0;
-    const target = Math.round(L.P + L.v * 0.16);
-    const from = Math.round(L.dragP - DRIFT);
+    const target = Math.round(L.dragTo + (L.P - L.dragP) + L.v * 0.16 - DRIFT) + DRIFT;
     L.to = target;
     L.mode = "spring";
     L.lastT = now;
-    const next = lastIndex.current + (target - from);
+    const next = Math.round(target - DRIFT);
     if (next !== lastIndex.current) {
-      lastIndex.current = next;
       const p = props.current;
+      lastIndex.current = p.controlled ? mod(next, p.realCount) : next;
       if (p.onIndexChange) p.onIndexChange(mod(next, p.realCount));
       if (!p.controlled) setInner(next);
     }
