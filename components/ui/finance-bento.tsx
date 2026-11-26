@@ -285,7 +285,7 @@ export function FinanceBento({
         {hasAvailableCash && (
           <article className={[styles.card, styles.kpi, styles.glassCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
             <span className={styles.eyebrow}>FREE CASH</span>
-            <strong className={styles.kpiValue}>{money(data.availableCash, true)}</strong>
+            <strong className={styles.kpiValue}>{money(data.availableCash ?? 0, true)}</strong>
             <span className={styles.kpiFoot}>Available balance</span>
           </article>
         )}
@@ -351,7 +351,7 @@ export function FinanceBento({
         <article className={[styles.card, styles.paymentsCard].join(" ")}>
           <div className={styles.cardHead}><h2>Next payments</h2><span className={styles.pill}>{payments.length} items</span></div>
           <div className={styles.paymentList}>
-            {payments.map((payment, index) => <div className={styles.paymentRow} key={payment.name + payment.date}>
+            {payments.map((payment) => <div className={styles.paymentRow} key={payment.name + payment.date}>
               <span className={styles.paymentIcon}>{payment.name.slice(0, 1).toUpperCase()}</span>
               <span className={styles.paymentName}><strong>{payment.name}</strong><small>{payment.date}</small></span>
               <strong>{money(payment.amount)}</strong>
