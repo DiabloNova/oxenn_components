@@ -120,12 +120,11 @@ export function FinanceBento({
   const gradientId = React.useId().replace(/:/g, "");
   const history = data.history ?? [];
   const current = history[history.length - 1];
-  const prior = history[history.length - 2] ?? current;
   const total = current ? totalOf(current) : 0;
-  const priorTotal = prior ? totalOf(prior) : total;
-  const change = priorTotal ? ((total - priorTotal) / priorTotal) * 100 : 0;
   const periodCount = period === "1M" ? 2 : period === "3M" ? 4 : 12;
   const visibleHistory = period === "All" ? history : history.slice(-periodCount);
+  const periodStartTotal = visibleHistory[0] ? totalOf(visibleHistory[0]) : total;
+  const change = periodStartTotal ? ((total - periodStartTotal) / periodStartTotal) * 100 : 0;
   const maxTotal = Math.max(1, ...visibleHistory.map(totalOf));
   const fiatValues = visibleHistory.map((item) => item.fiat);
   const stockValues = visibleHistory.map((item) => item.fiat + item.stocks);
