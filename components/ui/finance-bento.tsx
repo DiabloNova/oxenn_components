@@ -212,7 +212,7 @@ export function FinanceBento({
                 const x2 = 150 + Math.cos(radians) * outer;
                 const y2 = 150 + Math.sin(radians) * outer;
                 const active = index / 48 <= invested;
-                return <line key={index} x1={x1} y1={y1} x2={x2} y2={y2} stroke={active ? (index / 48 <= allocation[0]?.value / (total || 1) ? COLORS.stocks : COLORS.crypto) : "#ffffff38"} strokeWidth="3" strokeLinecap="round" />;
+                return <line key={index} x1={x1} y1={y1} x2={x2} y2={y2} stroke={active ? (index / 48 <= (allocation[0]?.value ?? 0) / (total || 1) ? COLORS.stocks : COLORS.crypto) : "#ffffff38"} strokeWidth="3" strokeLinecap="round" />;
               })}
               <text x="150" y="105" textAnchor="middle" className={styles.gaugeValue}>{Math.round(invested * 100)}%</text>
               <text x="150" y="128" textAnchor="middle" className={styles.gaugeLabel}>invested</text>
