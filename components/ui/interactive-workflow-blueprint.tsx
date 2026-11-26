@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
-import { ReactFlow, Handle, Position, getBezierPath, applyNodeChanges, applyEdgeChanges, useNodesInitialized, useReactFlow, type Node, type Edge, type NodeProps, type EdgeProps, type Connection, type NodeChange, type EdgeChange } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+import styles from "./interactive-workflow-blueprint.module.css";
+import { ReactFlow, Handle, Position, getBezierPath, applyNodeChanges, applyEdgeChanges, useNodesInitialized, useReactFlow, type Node, type Edge, type NodeProps, type EdgeProps, type Connection, type NodeChange, type EdgeChange, type ReactFlowInstance } from "@xyflow/react";
 
 export type WorkflowKind = "trigger" | "agent" | "integration" | "review" | "delivery";
 export interface WorkflowAction extends Record<string, unknown> { label: string; detail: string; kind: WorkflowKind; tool?: string; logo?: string }
@@ -24,7 +24,7 @@ function BlueprintNode({ data, selected }: NodeProps<WorkflowNode>) {
 function BlueprintEdge(props: EdgeProps) {
   const id = "wb-" + useId().replace(/:/g, "");
   const [path] = getBezierPath(props);
-  return <><defs><linearGradient id={id}><stop stopColor="var(--wb-primary)" /><stop offset="1" stopColor="var(--wb-secondary)" /></linearGradient></defs><path d={path} className="wb-edge-halo" /><path d={path} className="wb-edge" style={{ stroke: "url(#" + id + ")" }} /><path d={path} className="wb-edge-pulse" /><circle cx={props.sourceX} cy={props.sourceY} r="4" className="wb-port" /><circle cx={props.targetX} cy={props.targetY} r="4" className="wb-port" /></>;
+  return <><defs><linearGradient id={id} gradientUnits="userSpaceOnUse" x1={props.sourceX} y1={props.sourceY} x2={props.targetX} y2={props.targetY}><stop stopColor="var(--wb-primary)" /><stop offset="1" stopColor="var(--wb-secondary)" /></linearGradient></defs><path d={path} className="wb-edge-halo" /><path d={path} className="wb-edge" style={{ stroke: "url(#" + id + ")" }} /><path d={path} className="wb-edge-pulse" /><circle cx={props.sourceX} cy={props.sourceY} r="4" className="wb-port" /><circle cx={props.targetX} cy={props.targetY} r="4" className="wb-port" /></>;
 }
 const nodeTypes = { blueprint: BlueprintNode };
 const edgeTypes = { blueprint: BlueprintEdge };
@@ -52,6 +52,9 @@ function normalize(graph: WorkflowGraph): WorkflowGraph {
 
 export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflow editor", className = "", style, animated = true, agentTemplate, onChange }: WorkflowBlueprintProps) {
   const [graph, setGraph] = useState(() => normalize(initialGraph));
+  const graphRef = useRef(graph);
+  graphRef.current = graph;
+  const dragSnapshot = useRef<WorkflowGraph | null>(null);
   const [selected, setSelected] = useState(initialGraph.nodes[0]?.id ?? "");
   const [source, setSource] = useState(""); const [target, setTarget] = useState("");
   const [message, setMessage] = useState("Choose an action or drag a node to start.");
@@ -59,7 +62,7 @@ export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflo
   const [flow, setFlow] = useState<ReturnType<typeof useReactFlow<WorkflowNode>> | null>(null);
   const [width, setWidth] = useState(0); const [paused, setPaused] = useState(false);
   const [editing, setEditing] = useState<{ id: string; label: string; detail: string; tool: string } | null>(null);
-  const canvas = useRef<HTMLDivElement>(null); const flowRef = useRef<any>(null);
+  const canvas = useRef<HTMLDivElement>(null); const flowRef = useRef<ReactFlowInstance<WorkflowNode> | null>(null);
   const editInput = useRef<HTMLInputElement>(null); const editButton = useRef<HTMLButtonElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null); const initial = useRef(normalize(initialGraph));
   const seq = useRef(0); const uid = useId().replace(/:/g, ""); const changed = useRef(false);
@@ -94,7 +97,16 @@ export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflo
     commit(remaining, node.data.label + " removed."); setSelected(""); setEditing(null); selectRef.current?.focus();
   };
   const onNodesChange = useCallback((changes: NodeChange<WorkflowNode>[]) => {
-    changed.current = true;
+    const dragStarted = changes.some(change => change.type === "position" && change.dragging === true);
+    if (dragStarted && !dragSnapshot.current) dragSnapshot.current = graphRef.current;
+    const dragEnded = changes.some(change => change.type === "position" && change.dragging === false);
+    if (dragEnded) {
+      const previous = dragSnapshot.current ?? graphRef.current;
+      setHistory(history => [...history.slice(-19), previous]);
+      dragSnapshot.current = null;
+      changed.current = true;
+    }
+    if (changes.some(change => change.type === "remove" || change.type === "add" || change.type === "replace" || (change.type === "position" && change.dragging === false))) changed.current = true;
     setGraph(g => {
       const viewport = flowRef.current?.getViewport(); const rect = canvas.current?.getBoundingClientRect();
       const bounded = changes.map(change => {
@@ -109,7 +121,10 @@ export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflo
     });
     const picked = changes.find(c => c.type === "select" && c.selected); if (picked && "id" in picked) setSelected(picked.id);
   }, []);
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => { changed.current = true; setGraph(g => ({ ...g, edges: applyEdgeChanges(changes, g.edges) })); }, []);
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    if (changes.some(change => change.type === "remove" || change.type === "add" || change.type === "replace" || (change.type === "position" && change.dragging === false))) changed.current = true;
+    setGraph(g => ({ ...g, edges: applyEdgeChanges(changes, g.edges) }));
+  }, []);
   const focusNode = (id: string) => { setSelected(id); setEditing(null); setGraph(g => ({ ...g, nodes: g.nodes.map(n => ({ ...n, selected: n.id === id })) })); const node = graph.nodes.find(n => n.id === id); if (node) void flow?.setCenter(node.position.x + 98, node.position.y + 84, { zoom: 1 }); };
   const editSelected = () => { const n = graph.nodes.find(n => n.id === selected); if (n) setEditing({ id: n.id, label: n.data.label, detail: n.data.detail, tool: n.data.tool ?? "" }); };
   const save = () => { if (!editing || !editing.label.trim()) return; const label = editing.label.trim(); commit({ ...graph, nodes: graph.nodes.map(n => n.id === editing.id ? { ...n, data: { ...n.data, label, detail: editing.detail.trim(), tool: editing.tool.trim() || undefined } } : n) }, label + " updated."); setEditing(null); editButton.current?.focus(); };
@@ -119,8 +134,7 @@ export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflo
     const a = document.createElement("a"); a.href = url; a.download = "workflow.json"; a.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     setMessage("Workflow downloaded as JSON. No live integrations are connected.");
   };
-  return <section className={"wb-root " + className} style={style} aria-label={title} data-animated={animated && !paused}>
-    <style>{styles}</style>
+  return <section className={styles.root + " " + className} style={style} aria-label={title} data-animated={animated && !paused}>
     <header className="wb-header"><span className="wb-mark" aria-hidden="true">+</span><div className="wb-heading"><h2>{title}</h2><span>Build canvas</span></div>
       <div className="wb-header-actions">
         <button type="button" onClick={() => add({ ...agentTemplate, label: agentTemplate?.label ?? "New AI agent", detail: agentTemplate?.detail ?? "Describe what this agent does.", kind: "agent" }, true)} disabled={graph.nodes.length >= 20}>+ Add agent</button>
@@ -184,6 +198,3 @@ export default function WorkflowBlueprint({ initialGraph, apps, title = "Workflo
   </section>;
 }
 
-const styles = `
-.wb-root{--wb-bg:var(--color-background,Canvas);--wb-fg:var(--color-foreground,CanvasText);--wb-card:var(--color-card,Canvas);--wb-muted:var(--color-muted-foreground,GrayText);--wb-border:var(--color-border,GrayText);--wb-primary:var(--color-primary,Highlight);--wb-on-primary:var(--color-primary-foreground,HighlightText);--wb-secondary:var(--color-chart-2,var(--wb-primary));width:100%;min-width:0;border:1px solid var(--wb-border);border-radius:16px;overflow:hidden;background:var(--wb-bg);color:var(--wb-fg);font-family:inherit;font-size:14px;line-height:1.5;container-type:inline-size;box-sizing:border-box;isolation:isolate}.wb-root *{box-sizing:border-box}.wb-root button,.wb-root select{font:inherit;color:inherit;border:1px solid var(--wb-border);border-radius:8px;background:var(--wb-card);min-height:40px;padding:8px 12px}.wb-root button{cursor:pointer}.wb-root button:disabled{opacity:.45;cursor:not-allowed}.wb-root button:hover:enabled{background:color-mix(in srgb,var(--wb-primary) 12%,var(--wb-card))}.wb-root :is(button,select,summary):focus-visible{outline:3px solid var(--wb-primary);outline-offset:3px}.wb-root .wb-primary{background:var(--wb-primary);color:var(--wb-on-primary)}.wb-header{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--wb-border);background:var(--wb-card)}.wb-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--wb-primary);color:var(--wb-on-primary);font:26px/1 system-ui}.wb-heading{flex:1;min-width:0}.wb-heading h2{font-size:16px;margin:0}.wb-heading>span,.wb-node-head small{font:10px ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--wb-muted)}.wb-header-actions{display:flex;gap:8px;flex-wrap:wrap;font-size:12px}.wb-workspace{display:grid;grid-template-columns:minmax(0,1fr) 254px}.wb-canvas-column{min-width:0}.wb-canvas{position:relative;height:460px;background-image:radial-gradient(color-mix(in srgb,var(--wb-muted) 36%,transparent) 1px,transparent 1px);background-size:18px 18px}.wb-root .react-flow{background:transparent;--xy-attribution-background-color:var(--wb-card)}.wb-root .react-flow__node{background:none;border:0;padding:0}.wb-node{width:196px;min-height:166px;border:1px solid var(--wb-border);border-radius:18px;background:var(--wb-card);box-shadow:0 14px 32px -20px var(--wb-fg);color:var(--wb-fg)}.wb-node[data-selected=true]{outline:2px solid var(--wb-primary);outline-offset:4px}.wb-node-head{padding:15px 13px 12px;display:flex;gap:10px;align-items:center}.wb-node-head strong{font-size:14px;display:block;overflow-wrap:anywhere}.wb-glyph{display:grid;place-items:center;flex:0 0 36px;height:36px;border:1px solid var(--wb-border);border-radius:10px;color:var(--wb-primary)}.wb-glyph svg,.wb-glyph img{width:22px;height:22px;object-fit:contain}.wb-node-body{padding:10px 13px;border-top:1px solid var(--wb-border)}.wb-node-body p{font-size:12px;color:var(--wb-muted);margin:0 0 8px}.wb-node-body>span{font:9px ui-monospace,monospace;border:1px solid var(--wb-border);padding:2px 6px}.wb-root .react-flow__handle{width:12px;height:12px;min-width:12px;min-height:12px;border:2px solid var(--wb-card);background:var(--wb-primary)}.wb-edge-halo{fill:none;stroke:color-mix(in srgb,var(--wb-primary) 13%,transparent);stroke-width:9}.wb-edge{fill:none;stroke-width:2.5}.wb-edge-pulse{fill:none;stroke:var(--wb-fg);stroke-opacity:.45;stroke-width:2;stroke-dasharray:3 45;animation:wb-travel 6s linear infinite}.wb-port{fill:var(--wb-primary)}@keyframes wb-travel{to{stroke-dashoffset:-192}}.wb-root[data-animated=false] .wb-edge-pulse{animation:none}.wb-empty{position:absolute;inset:40% 20px auto;text-align:center;color:var(--wb-muted);pointer-events:none}.wb-tools{position:absolute;left:16px;bottom:16px;display:flex;gap:3px;padding:4px;border:1px solid var(--wb-border);border-radius:10px;background:var(--wb-card)}.wb-tools button{border:0;min-width:36px;font-size:12px}.wb-status{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--wb-border);padding:11px 18px;color:var(--wb-muted);font:10px ui-monospace,monospace}.wb-editor{padding:18px;border-top:1px solid var(--wb-border);background:var(--wb-card);font-size:12px}.wb-edit-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wb-edit-row select{flex:1;min-width:120px}.wb-connect{display:flex;gap:10px;align-items:end;margin-top:14px}.wb-connect label{flex:1;min-width:0;display:grid;gap:5px;color:var(--wb-muted)}.wb-connect select{width:100%;min-width:0}.wb-connect button{white-space:nowrap}.wb-details{margin-top:16px}.wb-details summary{cursor:pointer;color:var(--wb-muted);padding:6px 0}.wb-details p{line-height:1.7;color:var(--wb-muted)}.wb-details ul{list-style:none;padding:0}.wb-details li{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--wb-border);padding:7px 0}.wb-message{margin:14px 0;min-height:1.5em}.wb-root .wb-reset{border:0;background:none;text-decoration:underline;color:var(--wb-muted)}.wb-stack{border-left:1px solid var(--wb-border);background:var(--wb-card);padding:20px 15px;min-width:0}.wb-stack-heading{display:flex;justify-content:space-between}.wb-stack h3{font-size:14px;margin:0}.wb-stack>p{font-size:11px;color:var(--wb-muted)}.wb-app{border:1px solid var(--wb-border);border-radius:11px;margin-top:9px;overflow:hidden}.wb-app summary{list-style:none;display:flex;gap:9px;align-items:center;padding:12px;cursor:pointer}.wb-app summary:after{content:'+';margin-left:auto}.wb-app[open] summary:after{content:'−'}.wb-app summary strong{font-size:12px}.wb-app summary small{font:10px ui-monospace,monospace;color:var(--wb-muted)}.wb-app-mark{display:grid;place-items:center;width:27px;height:27px;border:1px solid var(--wb-border);border-radius:7px}.wb-app-mark img{width:18px;height:18px;object-fit:contain}.wb-actions{border-top:1px solid var(--wb-border);padding:6px}.wb-actions button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font-size:11px;border:0;background:none}.wb-actions button>span{flex:1}.wb-actions small{display:block;font:8px ui-monospace,monospace;color:var(--wb-muted);margin-top:3px}.wb-step-form{display:grid;gap:12px;margin-top:14px;padding:14px;border:1px solid var(--wb-border);border-radius:10px}.wb-step-form label{display:grid;gap:5px;color:var(--wb-muted)}.wb-step-form input,.wb-step-form textarea{width:100%;min-height:40px;padding:9px;border:1px solid var(--wb-border);border-radius:8px;background:var(--wb-card);color:var(--wb-fg);font:inherit}.wb-step-form>div{display:flex;gap:8px}@container(max-width:1050px){.wb-workspace{grid-template-columns:1fr}.wb-stack{border-left:0;border-top:1px solid var(--wb-border);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.wb-stack-heading,.wb-stack>p{grid-column:1/-1}.wb-canvas{height:410px}}@container(max-width:480px){.wb-header{padding:14px;flex-wrap:wrap}.wb-header-actions{width:100%}.wb-canvas{height:360px}.wb-status{flex-wrap:wrap}.wb-editor{padding:14px}.wb-edit-row{display:grid}.wb-connect{flex-wrap:wrap}.wb-connect button{width:100%}.wb-stack{grid-template-columns:1fr}.wb-stack-heading,.wb-stack>p{grid-column:auto}}@media(prefers-reduced-motion:reduce){.wb-root .wb-edge-pulse{animation:none}}
-`;

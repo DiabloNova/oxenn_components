@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { CSSProperties } from "react";
+import "@xyflow/react/dist/style.css";
 import WorkflowBlueprint, { type WorkflowApp, type WorkflowGraph } from "@/components/ui/interactive-workflow-blueprint";
 
 const graph: WorkflowGraph = {
