@@ -156,6 +156,7 @@ export function FinanceBento({
   const gradientId = React.useId().replace(/:/g, "");
   const hasAvailableCash = typeof data.availableCash === "number" && Number.isFinite(data.availableCash);
   const kpiWithoutCashClass = hasAvailableCash ? "" : styles.kpiNoCash;
+  const kpiWithoutCashLastClass = hasAvailableCash ? "" : styles.kpiNoCashLast;
   const history = data.history ?? [];
   const current = history[history.length - 1];
   const total = current ? totalOf(current) : 0;
@@ -294,7 +295,7 @@ export function FinanceBento({
           <strong className={styles.kpiValue}>{money(payments.reduce((sum, item) => sum + item.amount, 0), true)}</strong>
           <span className={styles.kpiFoot}>{payments.length} scheduled payments</span>
         </article>
-        <article className={[styles.card, styles.kpi, styles.glassCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
+        <article className={[styles.card, styles.kpi, styles.glassCard, kpiWithoutCashClass, kpiWithoutCashLastClass].filter(Boolean).join(" ")}>
           <span className={styles.eyebrow}>SAVINGS GOALS</span>
           <strong className={styles.kpiValue}>{goals.length} active</strong>
           <span className={styles.kpiFoot}>{goals.filter((goal) => goal.progress >= 1).length} completed</span>
@@ -360,7 +361,7 @@ export function FinanceBento({
           </div>
         </article>
 
-        <article className={[styles.card, styles.goalsCard, kpiWithoutCashClass].filter(Boolean).join(" ")}>
+        <article className={[styles.card, styles.goalsCard].join(" ")}>
           <div className={styles.cardHead}><h2>Goals</h2><span className={styles.pill}>{goals.length} active</span></div>
           <div className={styles.goalList}>
             {goals.map((goal) => <div className={styles.goal} key={goal.name}>
