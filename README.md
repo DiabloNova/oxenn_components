@@ -410,3 +410,5 @@ export default function LanyardExample() {
 ```
 
 The showcase uses the supplied portrait on the front and an Oxenn mark on the reverse. Both card images are local assets in `public/`; a strap texture is optional.
+
+- **Finance Bento:** `/components/finance-bento` — responsive personal-finance dashboard with net-worth history, asset allocation, portfolio KPIs, cash flow, crypto sparklines, weekly stock volume, payments, and savings goals.
