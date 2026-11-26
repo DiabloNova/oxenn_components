@@ -137,6 +137,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "contribution-skyline",
+    "href": "/components/contribution-skyline",
+    "title": "Contribution Skyline",
+    "icon": "Grid3X3",
+    "order": 100,
+    "navigation": true
+  },
+  {
     "slug": "fluid-glass",
     "href": "/components/fluid-glass",
     "title": "Fluid Glass",

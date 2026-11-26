@@ -42,8 +42,11 @@ const DEFAULT_PALETTE: [string, string, string, string, string] = [
 ];
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const DAY_MS = 86_400_000;
 const WEEK_COUNT = 53;
+
+function addCalendarDays(date: Date, amount: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
+}
 
 function makeDemoData(end: Date): number[] {
   let seed = 2026;
@@ -52,7 +55,7 @@ function makeDemoData(end: Date): number[] {
     return seed / 4_294_967_296;
   };
   return Array.from({ length: 365 }, (_, index) => {
-    const date = new Date(end.getTime() - (364 - index) * DAY_MS);
+    const date = addCalendarDays(end, index - 364);
     if (date.getDay() === 0 || date.getDay() === 6) return random() > 0.62 ? Math.ceil(random() * 5) : 0;
     return random() > 0.18 ? Math.ceil(random() * 12) : 0;
   });
@@ -94,7 +97,8 @@ export default function ContributionSkyline({
   const viewRef = useRef<HTMLDivElement>(null);
   const inView = useInView(rootRef, { margin: "100px" });
   const entered = useInView(rootRef, { once: true, amount: 0.2 });
-  const [end] = useState(() => endDate ?? new Date());
+  const [fallbackEnd] = useState(() => new Date());
+  const end = endDate ?? fallbackEnd;
   const series = useMemo(() => (data ?? makeDemoData(end)).map((v) => Math.max(0, Number.isFinite(v) ? v : 0)), [data, end]);
   const [skyline, setSkyline] = useState(defaultSkyline);
   const [width, setWidth] = useState(900);
@@ -108,6 +112,10 @@ export default function ContributionSkyline({
   const cellPolygonsRef = useRef<Array<{ index: number; points: Point[] }>>([]);
   const [soundReady, setSoundReady] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
+  const hoveredRef = useRef<number | null>(null);
+  const transitionStart = useRef(0);
+  const [renderVersion, setRenderVersion] = useState(0);
+  const autoplayTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -157,14 +165,14 @@ export default function ContributionSkyline({
     const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
     const lastRow = endDay.getDay();
     const count = (WEEK_COUNT - 1) * 7 + lastRow + 1;
-    const start = new Date(endDay.getTime() - ((WEEK_COUNT - 1) * 7 + lastRow) * DAY_MS);
+    const start = addCalendarDays(endDay, -((WEEK_COUNT - 1) * 7 + lastRow));
     const values = series.slice(-count);
     while (values.length < count) values.unshift(0);
     const positive = values.filter((value) => value > 0).sort((a, b) => a - b);
     const quantile = (ratio: number) => positive[Math.min(positive.length - 1, Math.floor(positive.length * ratio))] ?? 1;
     const cuts = [quantile(0.25), quantile(0.5), quantile(0.75)];
     const days: Day[] = values.map((value, index) => {
-      const date = new Date(start.getTime() + index * DAY_MS);
+      const date = addCalendarDays(start, index);
       const level = value <= 0 ? 0 : value <= cuts[0] ? 1 : value <= cuts[1] ? 2 : value <= cuts[2] ? 3 : 4;
       return { date, value, level, week: Math.floor(index / 7), weekday: index % 7 };
     });
@@ -205,13 +213,23 @@ export default function ContributionSkyline({
   const compact = width < 400;
 
   useEffect(() => {
+    transitionStart.current = performance.now();
+  }, [skyline]);
+
+  useEffect(() => () => {
+    const context = audioRef.current;
+    audioRef.current = null;
+    if (context && context.state !== "closed") void context.close();
+  }, []);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !inView) return;
     const context = canvas.getContext("2d");
     if (!context) return;
     const ratio = Math.min(2, window.devicePixelRatio || 1);
     let frame = 0;
-    const startTime = performance.now();
+    const startTime = transitionStart.current || performance.now();
     const draw = (now: number) => {
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
@@ -290,13 +308,15 @@ export default function ContributionSkyline({
         const pos = screen(project(day.week + 0.1, 7.9, 0, yawAngle, pitch));
         context.fillText(MONTHS[day.date.getMonth()], pos.x, Math.min(h - 4, pos.y));
       });
-      frame = requestAnimationFrame(draw);
+      if (skyline && !reducedMotion && progress < 1) frame = requestAnimationFrame(draw);
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [days, inView, skyline, reducedMotion, narrow, palette, maxValue, hovered, streak, longest, current, busiest, streakContains]);
+  }, [days, inView, skyline, reducedMotion, narrow, width, palette, maxValue, hovered, streak, longest, current, busiest, streakContains, renderVersion]);
 
   const setHover = (index: number | null) => {
+    if (hoveredRef.current === index) return;
+    hoveredRef.current = index;
     setHovered(index);
     setTipVisible(index !== null);
     if (index !== null) playTone(520 + days[index].level * 110);
@@ -322,7 +342,7 @@ export default function ContributionSkyline({
   };
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    touched.current = true;
+    markInteracted();
     if (!skyline) return;
     drag.current = { x: event.clientX, startYaw: yawRef.current, pointerId: event.pointerId, moved: false };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -335,6 +355,7 @@ export default function ContributionSkyline({
       if (activeDrag.moved) {
         const nextYaw = Math.max(-40, Math.min(40, activeDrag.startYaw + delta * 0.32));
         yawRef.current = nextYaw;
+        setRenderVersion((version) => version + 1);
         setHover(null);
         return;
       }
@@ -357,11 +378,20 @@ export default function ContributionSkyline({
     else if (event.key === "Escape") { setHover(null); return; }
     else return;
     event.preventDefault();
-    touched.current = true;
+    markInteracted();
     setHover(Math.max(0, Math.min(days.length - 1, next)));
   };
 
+  const markInteracted = () => {
+    touched.current = true;
+    if (autoplayTimer.current !== null) {
+      window.clearTimeout(autoplayTimer.current);
+      autoplayTimer.current = null;
+    }
+  };
+
   const changeView = (next: boolean) => {
+    markInteracted();
     if (next === skyline) return;
     setSkyline(next);
     setHover(null);
@@ -374,8 +404,14 @@ export default function ContributionSkyline({
 
   useEffect(() => {
     if (!autoplay || !inView || reducedMotion || touched.current) return;
-    const timer = window.setTimeout(() => setSkyline((current) => !current), 3600);
-    return () => window.clearTimeout(timer);
+    autoplayTimer.current = window.setTimeout(() => {
+      autoplayTimer.current = null;
+      if (!touched.current) setSkyline((current) => !current);
+    }, 3600);
+    return () => {
+      if (autoplayTimer.current !== null) window.clearTimeout(autoplayTimer.current);
+      autoplayTimer.current = null;
+    };
   }, [autoplay, inView, reducedMotion, skyline]);
 
   const streakDays = (range: { from: number; to: number }) => Math.max(0, range.to - range.from + 1);
@@ -396,7 +432,7 @@ export default function ContributionSkyline({
           <h2 className={`truncate font-semibold tracking-[-0.022em] ${narrow ? "text-[19px]" : "text-[22px]"}`}>{title}</h2>
           <p className="truncate text-[13px] text-[#6e6e73]">
             <strong className="tabular-nums text-[#1d1d1f]">{total.toLocaleString("en-US")}</strong>{" "}
-            {narrow ? "in the last six months" : `${noun[1]} in the last year`}
+            {`${noun[1]} in the last year`}
           </p>
         </div>
         <div role="radiogroup" aria-label="Contribution chart view" className="flex shrink-0 rounded-full bg-[#f2f2f4] p-[3px]">
@@ -409,7 +445,7 @@ export default function ContributionSkyline({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                tabIndex={selected ? 0 : -1}
+                tabIndex={0}
                 onClick={() => changeView(option.value)}
                 className={`relative flex items-center gap-1.5 rounded-full px-3 py-[5px] text-[13px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/60 ${selected ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6e6e73] hover:text-[#1d1d1f]"}`}
               >
@@ -469,11 +505,11 @@ export default function ContributionSkyline({
               type="button"
               aria-pressed={streak === chip.id}
               aria-label={`${chip.label}: ${chip.value}`}
-              onPointerEnter={(event) => { if (event.pointerType === "mouse") setStreak(chip.id); }}
+              onPointerEnter={(event) => { if (event.pointerType === "mouse") { markInteracted(); setStreak(chip.id); } }}
               onPointerLeave={(event) => { if (event.pointerType === "mouse") setStreak(null); }}
-              onFocus={() => setStreak(chip.id)}
+              onFocus={() => { markInteracted(); setStreak(chip.id); }}
               onBlur={() => setStreak(null)}
-              onClick={() => setStreak((currentStreak) => currentStreak === chip.id ? null : chip.id)}
+              onClick={() => { markInteracted(); setStreak((currentStreak) => currentStreak === chip.id ? null : chip.id); }}
               className={`flex items-center gap-2 rounded-full py-1.5 pl-2 pr-3 text-[12.5px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/60 ${streak === chip.id ? "bg-[#1d1d1f] text-white" : "bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#ececef]"}`}
             >
               <span className="grid h-5 w-5 place-items-center rounded-full bg-white" aria-hidden="true"><Icon size={11} /></span>
