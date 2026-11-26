@@ -168,7 +168,7 @@ export function FinanceBento({
   const selectedMonths = period === "1M" ? 1 : period === "3M" ? 3 : period === "1Y" ? 12 : null;
   const displayedPeriod = period === "All"
     ? "all time"
-    : periodSpanMonths === null
+    : periodSpanMonths === null || periodSpanMonths <= 0
       ? "not enough data"
       : periodSpanMonths === selectedMonths
         ? period
