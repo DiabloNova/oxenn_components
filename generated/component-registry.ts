@@ -33,6 +33,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "warp-carousel",
+    "href": "/components/warp-carousel",
+    "title": "Warp Carousel",
+    "icon": "Layers3",
+    "order": 29,
+    "navigation": true
+  },
+  {
     "slug": "glass-surface",
     "href": "/components/glass-surface",
     "title": "Glass Surface",
