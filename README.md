@@ -54,6 +54,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Text Loop:** `/components/text-loop` — animated SVG text paths with configurable shapes, ribbons, drag momentum, hover pause, and scroll boost.
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
 - **Lanyard:** `/components/lanyard` — a physics-driven 3D ID badge with a woven strap, drag-and-release interaction, and tap-to-flip card faces.
+- **Finance Bento:** `/components/finance-bento` — responsive personal-finance dashboard with net-worth history, asset allocation, portfolio KPIs, cash flow, crypto sparklines, weekly stock volume, payments, and savings goals.
 
 Open the hamburger menu on the home page to navigate to all component showcases.
 
@@ -410,5 +411,3 @@ export default function LanyardExample() {
 ```
 
 The showcase uses the supplied portrait on the front and an Oxenn mark on the reverse. Both card images are local assets in `public/`; a strap texture is optional.
-
-- **Finance Bento:** `/components/finance-bento` — responsive personal-finance dashboard with net-worth history, asset allocation, portfolio KPIs, cash flow, crypto sparklines, weekly stock volume, payments, and savings goals.
