@@ -179,7 +179,7 @@ export const Component = () => {
           </span>
         </h1>
         <p className={styles.description}>
-          Find how the best apps solve the screen you're about to design. Then the Floo Agent, or your own Claude Code or Cursor, designs your version on a live canvas your team can edit.
+          Find how the best apps solve the screen you&apos;re about to design. Then the Floo Agent, or your own Claude Code or Cursor, designs your version on a live canvas your team can edit.
         </p>
         <div className={styles.ctas}>
           <a href="#" className={styles.primaryCta}>
