@@ -89,6 +89,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "modren-and-stunning-hero-section",
+    "href": "/components/modren-and-stunning-hero-section",
+    "title": "Modern and Stunning Hero Section",
+    "icon": "Sparkles",
+    "order": 47,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",
