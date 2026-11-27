@@ -161,7 +161,7 @@ export const MARKETING_BENTO_SAMPLE: MarketingFeatureBentoProps = {
         filename: "agent.ts",
         // The quote is escaped so registry tooling does not read this sample line as a real import.
         lines: [
-          "import { trace } from "@tracewell/sdk";",
+          "import { trace } from \u0022@tracewell/sdk\u0022;",
           "",
           'trace.init({ project: "support" });',
         ],
