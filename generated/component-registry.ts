@@ -89,6 +89,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "marketing-feature-bento",
+    "href": "/components/marketing-feature-bento",
+    "title": "Marketing Feature Bento",
+    "icon": "Blocks",
+    "order": 47,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",
@@ -124,7 +132,7 @@ export const componentRegistry = [
     "slug": "split-flap-text",
     "href": "/components/split-flap-text",
     "title": "Split Flap Text",
-    "icon": "Clapperboard",
+    "icon": "Clipboard",
     "order": 70,
     "navigation": true
   },
