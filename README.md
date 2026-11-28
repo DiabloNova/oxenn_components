@@ -55,6 +55,7 @@ CI verifies that the committed registry matches the current route folders and me
 - **Fluid Glass:** `/components/fluid-glass` — a 3D refractive glass object with seven morphable shapes, pointer/drag interaction, image refraction, chromatic dispersion, and reduced-motion-aware WebGL2 rendering.
 - **Lanyard:** `/components/lanyard` — a physics-driven 3D ID badge with a woven strap, drag-and-release interaction, and tap-to-flip card faces.
 - **Finance Bento:** `/components/finance-bento` — responsive personal-finance dashboard with net-worth history, asset allocation, portfolio KPIs, cash flow, crypto sparklines, weekly stock volume, payments, and savings goals.
+- **Marketing Feature Bento:** `/components/marketing-feature-bento` — responsive six-column marketing grid with animated trace waterfalls, replay scrubber, alert stack, cost histogram, code snippet, keyboard shortcuts, and redaction illustration.
 
 Open the hamburger menu on the home page to navigate to all component showcases.
 
