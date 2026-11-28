@@ -89,6 +89,14 @@ export const componentRegistry = [
     "navigation": true
   },
   {
+    "slug": "marketing-feature-bento",
+    "href": "/components/marketing-feature-bento",
+    "title": "Marketing Feature Bento",
+    "icon": "Blocks",
+    "order": 47,
+    "navigation": true
+  },
+  {
     "slug": "branched-menu",
     "href": "/components/branched-menu",
     "title": "Branched Menu",
