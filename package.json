@@ -18,6 +18,7 @@
     "test:lanyard": "node --test tests/lanyard.test.mjs"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@types/node": "^22.15.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -35,5 +36,13 @@
     "eslint": "^9.22.0",
     "eslint-config-next": "^15.2.0",
     "typescript": "^5.8.0"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.32"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
+    }
   }
 }

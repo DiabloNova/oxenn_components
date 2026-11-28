@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Blocks,
   CircleCheck,
+  Clock3,
   Clapperboard,
   Command,
   Disc3,
@@ -28,6 +29,7 @@ import styles from "./page.module.css";
 
 const navigationIcons = {
   Blocks,
+  Clock3,
   Clapperboard,
   Disc3,
   Droplets,
