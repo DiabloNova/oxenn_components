@@ -408,7 +408,7 @@ function Waterfall({
           ))}
         </div>
         {spans.map((span, index) => (
-          <Fragment key={span.label}>
+          <Fragment key={`${span.label}-${index}`}>
             <span
               className={cn(
                 "truncate py-[5px] font-mono text-[11px] leading-4",
@@ -491,9 +491,9 @@ function Replay({
           className="absolute left-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-[color:var(--bjork-accent)]"
           style={{ width: `${position * 100}%` }}
         />
-        {markers.map((marker) => (
+        {markers.map((marker, index) => (
           <span
-            key={marker}
+            key={`${marker}-${index}`}
             className={cn(
               "absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[color:var(--bjork-surface)]",
               marker <= position
@@ -525,7 +525,7 @@ function Alerts({ alerts }: { alerts: { title: string; meta: string }[] }) {
         const depth = index;
         return (
           <div
-            key={alert.title}
+            key={`${alert.title}-${index}`}
             className="absolute inset-x-0 top-0 rounded-[14px] border border-[color:var(--bjork-border)] bg-[var(--bjork-surface)] p-3 shadow-[var(--bjork-shadow-menu)] transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] [transform:translateY(calc(var(--depth)*14px))_scale(calc(1-var(--depth)*0.06))] group-hover/card:[transform:translateY(calc(var(--depth)*40px))_scale(calc(1-var(--depth)*0.03))] motion-reduce:transition-none"
             style={{
               zIndex: stack.length - depth,
@@ -580,7 +580,7 @@ function Cost({
   animate: boolean;
 }) {
   const reduce = useBlockReducedMotion();
-  const max = Math.max(...bars);
+  const max = Math.max(0, ...bars) || 1;
   return (
     <div className="flex w-full max-w-[300px] flex-col gap-4">
       <div>
@@ -675,16 +675,16 @@ function Keys({
     <div className="grid w-full max-w-[420px] grid-cols-1 gap-2 @5xl:grid-cols-2">
       {shortcuts.map((shortcut, index) => (
         <div
-          key={shortcut.label}
+          key={`${shortcut.label}-${index}`}
           className="flex items-center justify-between gap-3 rounded-[12px] border border-[color:var(--bjork-border)] bg-[var(--bjork-panel)] px-3 py-2.5"
         >
           <span className="truncate text-[12.5px] text-[color:var(--bjork-text-medium)]">
             {shortcut.label}
           </span>
           <span className="flex gap-1">
-            {shortcut.keys.map((key) => (
+            {shortcut.keys.map((key, keyIndex) => (
               <kbd
-                key={key}
+                key={`${key}-${keyIndex}`}
                 className={cn(
                   "grid h-6 min-w-6 place-items-center rounded-[6px] border border-b-2 border-[color:var(--bjork-border-strong)] bg-[var(--bjork-surface)] px-1.5 font-mono text-[11px] text-[color:var(--bjork-text)] transition-transform duration-150 motion-reduce:transition-none",
                   index === 0 &&

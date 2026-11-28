@@ -89,10 +89,11 @@ export function Reveal({
   children: ReactNode;
 }) {
   const Component = as === "li" ? motion.li : motion.div;
+  const reduce = Boolean(useReducedMotion());
   return (
     <Component
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={reduce ? false : { opacity: 0, y: 16 }}
+      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ type: "spring", stiffness: 180, damping: 24, delay }}
       className={className}

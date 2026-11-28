@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
 @import "tw-animate-css";
 
 @theme inline {
@@ -6,7 +7,8 @@
   --font-bjork-display: Arial, Helvetica, sans-serif;
 }
 
-:root {
+:root,
+[data-tone="light"] {
   --bjork-bg: #f7f3ea;
   --bjork-surface: #fffcf6;
   --bjork-surface-muted: rgba(250, 246, 237, 0.94);
@@ -81,24 +83,6 @@
   --bjork-ring-offset: #080808;
 }
 
-[data-tone="light"] {
-  --bjork-bg: #f7f3ea;
-  --bjork-surface: #fffcf6;
-  --bjork-surface-muted: rgba(250, 246, 237, 0.94);
-  --bjork-surface-hover: #f5efe3;
-  --bjork-surface-active: #efe7d8;
-  --bjork-panel: #f8f2e7;
-  --bjork-text: #171717;
-  --bjork-text-medium: rgba(23, 23, 23, 0.78);
-  --bjork-text-muted: rgba(23, 23, 23, 0.68);
-  --bjork-text-soft: rgba(23, 23, 23, 0.62);
-  --bjork-text-faint: rgba(23, 23, 23, 0.22);
-  --bjork-border: #eee6db;
-  --bjork-border-strong: #e1d7c8;
-  --bjork-accent: #ec7d43;
-  --bjork-accent-soft: rgba(236, 125, 67, 0.1);
-  --bjork-ring-offset: #f7f3ea;
-}
 
 * { box-sizing: border-box; }
 html { min-width: 320px; background: #e9e9ed; }
